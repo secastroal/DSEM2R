@@ -3,7 +3,7 @@
 
 # AR model syntax
 
-write.ar <- function(y, x = NULL, data, lags = 1, 
+write.var <- function(y, x = NULL, data, lags = 1, 
                      lag.at.0 = NULL, beta.at.0 = NULL){
   # check if 'data' argument has been specified
   
@@ -28,14 +28,16 @@ write.ar <- function(y, x = NULL, data, lags = 1,
     stop("Argument 'y' must either be a character or a numeric vector.")
   
   if (is.character(y)) {
-    pos <- charmatch(y, names(data))
-    if (is.na(pos))
-      stop("Variable '", y, "' not found in the data frame.", call. = FALSE)
-    if (pos == 0L)
-      stop("Multiple matches for variable '", y, "' in the data frame.", call.=FALSE)
+    y.pos <- lapply(y, function(yy) {
+        pos <- charmatch(yy, names(data))
+        if (is.na(pos))
+          stop("Variable '", yy, "' not found in the data frame.", call. = FALSE)
+        if (pos == 0L)
+          stop("Multiple matches for variable '", yy, "' in the data frame.", call.=FALSE)
+    })
   } else {
     pos <- unique(round(y))
-    if (pos < 1 | pos > ncol(data))
+    if (min(pos) < 1 | max(pos) > ncol(data))
       stop("Variable positions must be between 1 and ", ncol(data), ".")
     y <- names(data)[pos]
   }
