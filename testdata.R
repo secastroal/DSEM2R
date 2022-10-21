@@ -2,26 +2,28 @@
 
 set.seed(2022)
 
-nT   <- 200          # Number of time points
-C    <- 2            # Number of covariates
-y    <- rep(NA, nT)  # Vector to store dependent variable
-y[1] <- rnorm(1)     # First observation of dependent variable
+nT   <- 200 # Number of time points
+C    <- 2   # Number of covariates
+y      <- matrix(NA, nT, 2)  # Matrix to store dependent variables
+y[1, ] <- rnorm(2)           # First observation of dependent variables
 x  <- replicate(C, rnorm(nT)) # Random normal covariates
 
 # Generate regression coefficients between -5 and 5
 # The betas include the intercept, the autoregressive effect, and 2 effects for
 # each covariate.
-betas <- sample(-5:5, C * 2 + 2, replace = TRUE)/10
+alpha  <- sample(-5:5, 2)/10                     # Intercept
+lagged <- matrix(sample(-5:5, 2 * 2)/10, 2, 2)   # (Cross)-Lagged effects
+betas  <- matrix(sample(-5:5, C * 2 * 2, replace = TRUE)/10, 2, C * 2) # Effects Covariates
 
 # Generate y for time >= 2
 
 for (t in 2:nT) {
-  y[t] <- betas[1] + betas[2] * y[t - 1] + sum(betas[3:(2 + C)] * x[t, ]) + 
-    sum(betas[(3 + C):(2 * C + 2)] * x[t - 1, ]) + rnorm(1)
+  y[t, ] <- alpha + lagged %*% y[t - 1, ] + betas[, 1:C] %*% x[t - 1, ] +
+    betas[, (C + 1):(2 * C)] %*% x[t, ] + rnorm(2)
 }
 rm(t)
 
 ardata <- data.frame(y, x)
-names(ardata) <- c("y", paste0("x", 1:C))
+names(ardata) <- c(paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT)
 
