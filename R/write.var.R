@@ -70,15 +70,48 @@ write.var <- function(y, x = NULL, data, lags = 1,
   # beta.at.0.
   
   lagged_effects <- paste0(rep(y, each = lags), "&", 1:lags)
-  lagged_effects[c(t(lag.at.0)) == 1] <- paste0(
-    lagged_effects[c(t(lag.at.0)) == 1], 
-    "@0"
-    )
+  if (!is.null(lag.at.0)) {
+    
+    if (is.vector(lag.at.0)) {
+      lag.at.0 <- t(as.matrix(lag.at.0))
+    }
+    
+    if (nrow(lag.at.0) != length(y) | ncol(lag.at.0) != lags) {
+      if (length(y == 1L)) {
+        stop("Argument 'lag.at.0' must be a logical vector of length ",
+             lags, "L.")
+      } else {
+        stop("Argument 'lag.at.0' must be a logical matrix with ",
+             length(y), " rows and ", lags, " columns.")
+      }
+    }
+    
+    lagged_effects[c(t(lag.at.0)) == TRUE] <- paste0(
+      lagged_effects[c(t(lag.at.0)) == TRUE], 
+      "@0"
+      )
+  }
   covariate_effects <- c(rbind(x, paste0(x, "&", 1)))
-  covariate_effects[c(t(beta.at.0)) == 1] <- paste0(
-    covariate_effects[c(t(beta.at.0)) == 1], 
-    "@0"
-    )
+  if (!is.null(beta.at.0)) {
+    
+    if (is.vector(beta.at.0)) {
+      beta.at.0 <- t(as.matrix(beta.at.0))
+    }
+    
+    if (nrow(beta.at.0) != length(x) | ncol(beta.at.0) != 2) {
+      if (length(x == 1L)) {
+        stop("Argument 'beta.at.0' must be a logical vector of length 2L.")
+      } else {
+        stop("Argument 'beta.at.0' must be a logical matrix with ",
+             length(x), " rows and 2 columns.")
+      }
+    }
+    
+    covariate_effects[c(t(beta.at.0)) == TRUE] <- paste0(
+      covariate_effects[c(t(beta.at.0)) == TRUE], 
+      "@0"
+      )
+  }
   
   syntax <- rep(NA, length(y))
   
