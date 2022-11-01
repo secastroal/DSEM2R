@@ -1,7 +1,7 @@
 # Write Mplus syntax of AR models. Based on examples 6.23 and 6.24 of the 
 # Mplus Manual.
 
-# AR model syntax
+# VAR model syntax
 
 write.var <- function(y, x = NULL, data, lags = 1, 
                      lag.at.0 = NULL, beta.at.0 = NULL){
@@ -63,8 +63,36 @@ write.var <- function(y, x = NULL, data, lags = 1,
     }
   }
   
+  # Create syntax of the VAR model
+  # Using as many lags for the y variables as indicated with the argument lag.
+  # Using contemporaneous and one lagged effect for each covariate.
+  # Some of these effects might be set at 0 with the arguments lag.at.0 and 
+  # beta.at.0.
   
-  return(c(y, x))
+  lagged_effects <- paste0(rep(y, each = lags), "&", 1:lags)
+  lagged_effects[c(t(lag.at.0)) == 1] <- paste0(
+    lagged_effects[c(t(lag.at.0)) == 1], 
+    "@0"
+    )
+  covariate_effects <- c(rbind(x, paste0(x, "&", 1)))
+  covariate_effects[c(t(beta.at.0)) == 1] <- paste0(
+    covariate_effects[c(t(beta.at.0)) == 1], 
+    "@0"
+    )
   
+  syntax <- rep(NA, length(y))
   
+  for (i in 1:length(y)) {
+    syntax[i] <- paste0(y[i], " ON ", 
+                        paste(lagged_effects, collapse = " "), " ",
+                        paste(covariate_effects, collapse = " "), ";")
+  }
+  rm(i)
+  
+  #!# Make a check to warn that some lines are longer that 80 characters or
+  #!# modify the syntax somehow to include breaks in those lines.
+  
+  syntax <- paste(syntax, collapse = "\n")
+  
+  return(syntax)
 }
