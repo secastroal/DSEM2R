@@ -36,11 +36,12 @@ analysis.options <- function(type         = NULL,
   
   if (biterations.max < biterations.min) {
     biterations.max <- 5 * biterations.min
-    warning("'biterations.max' was lower than 'biterations.min', 'biterations.max' 
-            has been set to ", 5 * biterations.min, ".")
+    warning("'biterations.max' was lower than 'biterations.min',", 
+            "'biterations.max' has been set to ", 
+            5 * biterations.min, ".")
   }
   biterations_syntax <- paste0("BITERATIONS = ", biterations.max,
-                               "(", biterations.min, ");")
+                               " (", biterations.min, ");")
   
   if (!is.null(bseed)) {
     bseed_syntax <- paste0("BSEED = ", bseed, ";")
