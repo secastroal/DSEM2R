@@ -71,6 +71,7 @@ variable.options <- function(within    = NULL,
                            collapse = "\n")
   
   variable_syntax <- gsub("\n{2,}", "\n", variable_syntax)
+  variable_syntax <- gsub("^\n", "", variable_syntax)
   
   return(variable_syntax)
 }

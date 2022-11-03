@@ -27,7 +27,7 @@ ardata <- data.frame(y, x)
 names(ardata) <- c(paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT)
 
-MplusAutomation::prepareMplusData(ardata, filename = "test.dat", inpfile = TRUE)
+MplusAutomation::prepareMplusData(ardata, filename = "test3.txt", inpfile = TRUE)
 
 
 

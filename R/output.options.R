@@ -25,16 +25,16 @@ output.options <- function (tech         = c(1, 8),
   output_syntax <- paste(strwrap(output_syntax, width = 85, exdent = 5), 
                          collapse = "\n")
   
-  if (any(unlist(save))) {
+  if (!all(unlist(lapply(save, is.null)))) {
     
-    if (!is.null(bparameters)) {
-      bparameters_syntax <- paste0("BPARAMETERS = ", bparameters, ";")
+    if (!is.null(save$bparameters)) {
+      bparameters_syntax <- paste0("BPARAMETERS = ", save$bparameters, ";")
     } else {
       bparameters_sytax <- ""
     }
     
-    if (!is.null(fscores)) {
-      fscores_syntax <- paste0("FILE is ", fscores, 
+    if (!is.null(save$fscores)) {
+      fscores_syntax <- paste0("FILE is ", save$fscores, 
                                ";\nSAVE = FSCORES (100, 10);")
     } else {
       fscores_syntax <- ""
