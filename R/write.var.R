@@ -125,5 +125,8 @@ write.var <- function(y, x = NULL, data, lags = 1,
   # Reduce line length to 85 characters or less.
   syntax <- paste(strwrap(syntax, width = 85, exdent = 5), collapse = "\n")
   
+  # Complete model syntax:
+  syntax <- paste("MODEL:\n", syntax)
+  
   return(syntax)
 }
