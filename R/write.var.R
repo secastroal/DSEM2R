@@ -122,10 +122,8 @@ write.var <- function(y, x = NULL, data, lags = 1,
   }
   rm(i)
   
-  #!# Make a check to warn that some lines are longer that 80 characters or
-  #!# modify the syntax somehow to include breaks in those lines.
-  
-  syntax <- paste(syntax, collapse = "\n")
+  # Reduce line length to 85 characters or less.
+  syntax <- paste(strwrap(syntax, width = 85, exdent = 5), collapse = "\n")
   
   return(syntax)
 }

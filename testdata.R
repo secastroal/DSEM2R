@@ -1,4 +1,4 @@
-# Testing data for AR model.
+# Testing data for VAR model.
 
 set.seed(2022)
 
