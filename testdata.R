@@ -1,4 +1,5 @@
 # Testing data for VAR model.
+lapply(list.files("R/", full.names = TRUE), source)
 
 set.seed(2022)
 
