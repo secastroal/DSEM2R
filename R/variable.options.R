@@ -1,12 +1,21 @@
 # Mplus variable options
 
-variable.options <- function(within    = NULL,
+variable.options <- function(usevar    = NULL,
+                             within    = NULL,
                              between   = NULL,
                              cluster   = NULL,
                              lagged    = NULL,
                              lags      = NULL,
                              timevar   = NULL,
                              tinterval = NULL) {
+  if (!is.null(usevar)) {
+    usevar_syntax <- paste0("USEVARIABLES = ",
+                            paste(usevar, collapse = " "),
+                            ";")
+  } else {
+    usevar_syntax <- ""
+  }
+  
   if (!is.null(within)) {
     within_syntax <- paste0("WITHIN = ",
                             paste(within, collapse = " "),
@@ -61,7 +70,8 @@ variable.options <- function(within    = NULL,
     timevar_syntax <- ""
   }
   
-  variable_syntax <- c(within_syntax,
+  variable_syntax <- c(usevar_syntax,
+                       within_syntax,
                        between_syntax,
                        cluster_syntax,
                        lagged_syntax,

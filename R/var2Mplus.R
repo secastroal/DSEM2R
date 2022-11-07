@@ -13,13 +13,15 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
   prepareMplusData(data, filename = filename, inpfile = inpfile, ...)
   
   if (missing(variable_options)) {
-    variable_syntax <- variable.options(lagged = c(y, x), 
+    variable_syntax <- variable.options(usevar = c(y, x),
+                                        lagged = c(y, x), 
                                         lags = rep(c(lags, 1), 
                                                    times = c(length(y), 
                                                              length(x))))
   } else {
     variable_syntax <- do.call(variable.options, 
-                               c(list(lagged = c(y, x),
+                               c(list(usevar = c(y, x),
+                                      lagged = c(y, x),
                                       lags = rep(c(lags, 1),
                                                  times = c(length(y), 
                                                            length(x)))),
