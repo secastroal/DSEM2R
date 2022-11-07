@@ -1,4 +1,5 @@
 # Testing data for VAR model.
+lapply(list.files("R/", full.names = TRUE), source)
 
 set.seed(2022)
 
@@ -27,16 +28,9 @@ ardata <- data.frame(y, x)
 names(ardata) <- c(paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT)
 
-MplusAutomation::prepareMplusData(ardata, filename = "test3.txt", inpfile = TRUE)
+# Example write AR(1) Mplus syntax.
+var2Mplus(y = "y1", data = ardata, filename = "test.dat")
 
+# Example write VAR(1) Mplus syntax. 
+var2Mplus(y = c("y1", "y2"), data = ardata, filename = "test.dat")
 
-
-
-
-
-saveoutput_syntax <- paste0("\nSAVEDATA: BPARAMETERS = ", paste0("samples_", file.name, ".dat"),
-                            ";", "\nOUTPUT: TECH8;")
-
-write(analysis_syntax, paste0(folder,file.name,".inp"), append = T) # Write Analysis specifications
-write(mplus_syntax, paste0(folder,file.name,".inp"), append = T)
-write(saveoutput_syntax, paste0(folder,file.name,".inp"), append = T)
