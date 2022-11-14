@@ -1,5 +1,5 @@
 # Testing data for VAR model.
-lapply(list.files("R/", full.names = TRUE), source)
+invisible(lapply(list.files("R/", full.names = TRUE), source))
 
 set.seed(2022)
 
@@ -24,9 +24,18 @@ for (t in 2:nT) {
 }
 rm(t)
 
-ardata <- data.frame(y, x)
-names(ardata) <- c(paste0("y", 1:2), paste0("x", 1:C))
-rm(y, x, C, nT)
+# Generate dates between 2020 and 2021
+day <- seq(as.Date("2020/09/01"), as.Date("2021/08/31"), by = "day")
+day <- sort(sample(day, nT))
+
+beeps <- seq(as.POSIXct("2020-09-01 08:00:00"), by = "90 min", length.out = 200)
+
+ardata <- data.frame(day, beeps, y, x)
+names(ardata) <- c("day", "beep", paste0("y", 1:2), paste0("x", 1:C))
+rm(y, x, C, nT, day, beeps)
+
+
+MplusAutomation::prepareMplusData(ardata[, -2], filename = "test.dat", inpfile = TRUE)
 
 # Example write AR(1) Mplus syntax.
 var2Mplus(y = "y1", data = ardata, filename = "test1.dat")

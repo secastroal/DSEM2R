@@ -20,7 +20,7 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
                                                              length(x))))
   } else {
     variable_syntax <- do.call(variable.options, 
-                               c(list(usevar = c(y, x),
+                               c(list(usevar = c(y, x, timevar),
                                       lagged = c(y, x),
                                       lags = rep(c(lags, 1),
                                                  times = c(length(y), 
