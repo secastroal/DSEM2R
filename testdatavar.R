@@ -1,4 +1,5 @@
 # Testing data for VAR model.
+library(MplusAutomation)
 invisible(lapply(list.files("R/", full.names = TRUE), source))
 
 set.seed(2022)
@@ -35,7 +36,11 @@ names(ardata) <- c("day", "beep", paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT, day, beeps)
 
 
-MplusAutomation::prepareMplusData(ardata[, -2], filename = "test.dat", inpfile = TRUE)
+ardata$int     <- sample(1:5, 200, replace = TRUE)
+ardata$logical <- as.logical(rbinom(200, 1, 0.7))
+ardata$gender  <- ifelse(rbinom(200, 1, 0.6) == 1, "male", "female")
+
+MplusAutomation::prepareMplusData(ardata[, -(1:2)], filename = "test.dat", inpfile = TRUE)
 
 # Example write AR(1) Mplus syntax.
 var2Mplus(y = "y1", data = ardata, filename = "test1.dat")
