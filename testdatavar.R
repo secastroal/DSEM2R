@@ -35,13 +35,6 @@ ardata <- data.frame(day, beeps, y, x)
 names(ardata) <- c("day", "beep", paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT, day, beeps)
 
-
-ardata$int     <- sample(1:5, 200, replace = TRUE)
-ardata$logical <- as.logical(rbinom(200, 1, 0.7))
-ardata$gender  <- ifelse(rbinom(200, 1, 0.6) == 1, "male", "female")
-
-MplusAutomation::prepareMplusData(ardata[, -(1:2)], filename = "test.dat", inpfile = TRUE)
-
 # Example write AR(1) Mplus syntax.
 var2Mplus(y = "y1", data = ardata, filename = "test1.dat")
 
