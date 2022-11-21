@@ -10,10 +10,90 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
   
   require(MplusAutomation)
   
+  # check if 'data' argument has been specified
+  
+  if (missing(data))
+    data <- NULL
+  
+  no.data <- is.null(data)
+  
+  if (no.data) {
+    data <- sys.frame(sys.parent())
+  } else {
+    if (!is.data.frame(data))
+      data <- data.frame(data)
+  }
+  
+  # Check if variables y, x, and time are in in the data 
+  
+  if (is.null(y))
+    stop("Argument 'y' must be specified.")
+  
+  if (!(is.character(y) | is.numeric(y)))
+    stop("Argument 'y' must either be a character or a numeric vector.")
+  
+  if (is.character(y)) {
+    y.pos <- lapply(y, function(yy) {
+      pos <- charmatch(yy, names(data))
+      if (is.na(pos))
+        stop("Variable '", yy, "' not found in the data frame.", call. = FALSE)
+      if (pos == 0L)
+        stop("Multiple matches for variable '", yy, "' in the data frame.", call.=FALSE)
+    })
+  } else {
+    pos <- unique(round(y))
+    if (min(pos) < 1 | max(pos) > ncol(data))
+      stop("Variable positions must be between 1 and ", ncol(data), ".")
+    y <- names(data)[pos]
+  }
+  
+  if (!is.null(x)) {
+    if (!(is.character(x) | is.numeric(x)))
+      stop("Argument 'x' must either be a character or a numeric vector.")
+    
+    if (is.character(x)) {
+      x.pos <- lapply(x, function(xx) {
+        pos <- charmatch(xx, names(data))
+        if (is.na(pos))
+          stop("Variable '", xx, "' not found in the data frame.", call. = FALSE)
+        if (pos == 0L)
+          stop("Multiple matches for variable '", xx, "' in the data frame.", call.=FALSE)
+        return(pos)
+      })
+    } else {
+      pos <- unique(round(x))
+      if (min(pos) < 1 | max(pos) > ncol(data))
+        stop("Variable positions must be between 1 and ", ncol(data), ".")
+      x <- names(data)[pos]
+    }
+  }
+  
+  if (!is.null(time)) {
+    if (!(is.character(time) | is.numeric(time)))
+      stop("Argument 'time' must either be a character or a numeric vector.")
+    
+    if (is.character(time)) {
+      time.pos <- lapply(time, function(xx) {
+        pos <- charmatch(xx, names(data))
+        if (is.na(pos))
+          stop("Variable '", xx, "' not found in the data frame.", call. = FALSE)
+        if (pos == 0L)
+          stop("Multiple matches for variable '", xx, "' in the data frame.", call.=FALSE)
+        return(pos)
+      })
+    } else {
+      pos <- unique(round(time))
+      if (min(pos) < 1 | max(pos) > ncol(data))
+        stop("Variable positions must be between 1 and ", ncol(data), ".")
+      time <- names(data)[pos]
+    }
+  }
+  
   # Look for variables of class Date or POSIXct
   
   var.classes <- unlist(lapply(data, class))
   var.classes <- var.classes[var.classes != "POSIXt"]
+  names(var.classes) <- names(data)
   
   if (!all(var.classes %in% c("numeric", "integer", "logical",
                               "character", "factor", "Date", "POSIXct"))) {
@@ -45,8 +125,8 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
         if (var.classes[variable_options$timevar] == "Date") {
           message("Variables: ", paste0(names(data)[dates.ind], sep = ", "), 
                   "are of class 'Date' or 'POSIXct'. These variables were ",
-                  "coerced to numeric with 'as.numeric'.\n 'timevar' in ",
-                  "variable_options has been specified. Note, that a ",
+                  "coerced to numeric with 'as.numeric'.\n'timevar' in ",
+                  "variable_options has been specified.\nNote, that a ",
                   "'tinterval' = ", 
                   ifelse(is.null(variable_options$tinterval), 1, 
                          variable_options$tinterval), " means that the time ",
@@ -56,8 +136,8 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
         } else {
           message("Variables: ", paste0(names(data)[dates.ind], sep = ", "), 
                   "are of class 'Date' or 'POSIXct'. These variables were ",
-                  "coerced to numeric with 'as.numeric'.\n 'timevar' in ",
-                  "variable_options has been specified. Note, that a ",
+                  "coerced to numeric with 'as.numeric'.\n'timevar' in ",
+                  "variable_options has been specified.\nNote, that a ",
                   "'tinterval' = ", 
                   ifelse(is.null(variable_options$tinterval), 1, 
                          variable_options$tinterval), " means that the time ",
@@ -108,7 +188,7 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
     analysis_syntax <- do.call(analysis.options, c(analysis_options))
   }
   
-  model_syntax <- write.var(y = y, x = x, data = data, lags = lags, 
+  model_syntax <- write.var(y = y, x = x, time = time, data = data, lags = lags, 
                             lag.at.0 = lag.at.0, beta.at.0 = beta.at.0)
   
   if (missing(output_options)) {
