@@ -85,3 +85,17 @@ var2Mplus(y = c("y1", "y2"), time = "day", data = ardata,
           filename = "ex6.25d.dat")
 runModels("ex6.25d.inp")
 
+# Example 6.25 in Mplus user's guide changing MCMC options
+var2Mplus(y = c("y1", "y2"), data = ardata, filename = "ex6.25e.dat",
+          analysis_options = list(chains = 4, biterations.min = 2000,
+                                  biterations.max = 10000, thin = 10))
+runModels("ex6.25e.inp")
+
+# Example 6.25 in Mplus user's guide saving MCMC samples
+var2Mplus(y = c("y1", "y2"), data = ardata, filename = "ex6.25f.dat",
+          output_options = list(save = list(bparameters = "ex6.25f_samples.dat")))
+runModels("ex6.25f.inp")
+
+# Example 6.25 in Mplus user's guide using column number instead of column name
+var2Mplus(y = 3:4, data = ardata, filename = "ex6.25g.dat")
+runModels("ex6.25g.inp")
