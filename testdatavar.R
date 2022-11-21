@@ -5,23 +5,27 @@ invisible(lapply(list.files("R/", full.names = TRUE), source))
 set.seed(2022)
 
 nT   <- 200 # Number of time points
+M    <- 2   # Number of depedent variables
 C    <- 2   # Number of covariates
-y      <- matrix(NA, nT, 2)  # Matrix to store dependent variables
-y[1, ] <- rnorm(2)           # First observation of dependent variables
+y      <- matrix(NA, nT, M)  # Matrix to store dependent variables
+y[1, ] <- rnorm(M)           # First observation of dependent variables
 x  <- replicate(C, rnorm(nT)) # Random normal covariates
 
 # Generate regression coefficients between -5 and 5
 # The betas include the intercept, the autoregressive effect, and 2 effects for
 # each covariate.
-alpha  <- sample(-5:5, 2)/10                     # Intercept
-lagged <- matrix(sample(-5:5, 2 * 2)/10, 2, 2)   # (Cross)-Lagged effects
-betas  <- matrix(sample(-5:5, C * 2 * 2, replace = TRUE)/10, 2, C * 2) # Effects Covariates
+alpha  <- sample(-5:5, M)/10                    # Intercept
+lagged <- matrix(sample(0:5, M * M, replace = TRUE)/10, M, M)          # (Cross)-Lagged effects
+betas  <- matrix(sample(-5:5, C * 2 * M, replace = TRUE)/10, M, C * 2) # Effects Covariates
 
 # Generate y for time >= 2
 
 for (t in 2:nT) {
-  y[t, ] <- alpha + lagged %*% y[t - 1, ] + betas[, 1:C] %*% x[t - 1, ] +
-    betas[, (C + 1):(2 * C)] %*% x[t, ] + rnorm(2)
+  y[t, ] <- alpha + 
+            lagged %*% y[t - 1, ] + 
+            betas[, 1:C] %*% as.matrix(x[t - 1, ]) +
+            betas[, (C + 1):(2 * C)] %*% as.matrix(x[t, ]) + 
+            rnorm(M)
 }
 rm(t)
 
@@ -34,6 +38,7 @@ beeps <- seq(as.POSIXct("2020-09-01 08:00:00"), by = "90 min", length.out = 200)
 ardata <- data.frame(day, beeps, y, x)
 names(ardata) <- c("day", "beep", paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT, day, beeps)
+
 
 # Example write AR(1) Mplus syntax.
 var2Mplus(y = "y1", data = ardata, filename = "test1.dat")

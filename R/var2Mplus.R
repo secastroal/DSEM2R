@@ -15,6 +15,19 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
   var.classes <- unlist(lapply(data, class))
   var.classes <- var.classes[var.classes != "POSIXt"]
   
+  if (!all(var.classes %in% c("numeric", "integer", "logical",
+                              "character", "factor", "Date", "POSIXct"))) {
+    error.class <- var.classes[!(var.classes %in% c("numeric", "integer", 
+                                                    "logical", "character", 
+                                                    "factor", "Date", "POSIXct"))]
+    error.class <- unique(error.class)
+    stop("Currently only variables of class:\n",
+         "numeric, interger, logical, character, factor, Date, or POSIXct\n",
+         "are allowed but found additional class types including:\n",
+         error.class, "\n\nto see which variables are problematic, try:\n",
+         "str(yourdata)")
+  }
+  
   if (any(var.classes == "Date") | any(var.classes == "POSIXct")) {
     dates.ind         <- which(var.classes == "Date" | var.classes == "POSIXct")
     
@@ -59,6 +72,15 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
       }
     }
     
+  }
+  
+  if (max(nchar(names(data))) > 8) {
+    warn.names <- names(data)[which(nchar(names(data)) > 8)]
+    warning("Variables names must be up to 8 characters in length.\n",
+            "The following variables have names with 9 or more characters:\n",
+            warn.names,
+            "\n\nThis might result in errors when running the model in Mplus."
+            )
   }
   
   prepareMplusData(data, filename = filename, inpfile = inpfile, ...)
