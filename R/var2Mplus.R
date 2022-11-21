@@ -1,6 +1,6 @@
 # Funtion to preare data and write a complete syntax of a VAR model in Mplus
 
-var2Mplus <- function(y, x = NULL, data, lags = 1, 
+var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1, 
                       lag.at.0 = NULL, beta.at.0 = NULL,
                       variable_options,
                       analysis_options,
@@ -42,7 +42,7 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
               "coerced to numeric with 'as.numeric'.")
     } else {
       if (!is.null(variable_options$timevar)) {
-        if (class(data[, variable_options$timevar]) == "Date") {
+        if (var.classes[variable_options$timevar] == "Date") {
           message("Variables: ", paste0(names(data)[dates.ind], sep = ", "), 
                   "are of class 'Date' or 'POSIXct'. These variables were ",
                   "coerced to numeric with 'as.numeric'.\n 'timevar' in ",
@@ -86,14 +86,15 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
   prepareMplusData(data, filename = filename, inpfile = inpfile, ...)
   
   if (missing(variable_options)) {
-    variable_syntax <- variable.options(usevar = c(y, x),
+    variable_syntax <- variable.options(usevar = c(y, x, time),
                                         lagged = c(y, x), 
                                         lags = rep(c(lags, 1), 
                                                    times = c(length(y), 
                                                              length(x))))
   } else {
     variable_syntax <- do.call(variable.options, 
-                               c(list(usevar = c(y, x, variable_options$timevar),
+                               c(list(usevar = unique(c(y, x, time, 
+                                                        variable_options$timevar)),
                                       lagged = c(y, x),
                                       lags = rep(c(lags, 1),
                                                  times = c(length(y), 

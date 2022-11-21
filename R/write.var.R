@@ -3,7 +3,7 @@
 
 # VAR model syntax
 
-write.var <- function(y, x = NULL, data, lags = 1, 
+write.var <- function(y, x = NULL, time = NULL, data, lags = 1, 
                      lag.at.0 = NULL, beta.at.0 = NULL){
   # check if 'data' argument has been specified
   
@@ -63,6 +63,27 @@ write.var <- function(y, x = NULL, data, lags = 1,
     }
   }
   
+  if (!is.null(time)) {
+    if (!(is.character(time) | is.numeric(time)))
+      stop("Argument 'time' must either be a character or a numeric vector.")
+    
+    if (is.character(time)) {
+      time.pos <- lapply(time, function(xx) {
+        pos <- charmatch(xx, names(data))
+        if (is.na(pos))
+          stop("Variable '", xx, "' not found in the data frame.", call. = FALSE)
+        if (pos == 0L)
+          stop("Multiple matches for variable '", xx, "' in the data frame.", call.=FALSE)
+        return(pos)
+      })
+    } else {
+      pos <- unique(round(time))
+      if (min(pos) < 1 | max(pos) > ncol(data))
+        stop("Variable positions must be between 1 and ", ncol(data), ".")
+      time <- names(data)[pos]
+    }
+  }
+  
   # Create syntax of the VAR model
   # Using as many lags for the y variables as indicated with the argument lag.
   # Using contemporaneous and one lagged effect for each covariate.
@@ -118,12 +139,17 @@ write.var <- function(y, x = NULL, data, lags = 1,
     covariate_effects <- NULL
   }
   
+  if (!is.null(time)) {
+    time_effect <- time
+  }
+  
   syntax <- rep(NA, length(y))
   
   for (i in 1:length(y)) {
     syntax[i] <- paste0(y[i], " ON ", 
                         paste(lagged_effects, collapse = " "), " ",
-                        paste(covariate_effects, collapse = " "), ";")
+                        paste(covariate_effects, collapse = " "),
+                        time_effect, ";")
   }
   rm(i)
   
