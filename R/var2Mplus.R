@@ -42,7 +42,7 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
               "coerced to numeric with 'as.numeric'.")
     } else {
       if (!is.null(variable_options$timevar)) {
-        if (class(variable_options$timevar) == "Date") {
+        if (class(data[, variable_options$timevar]) == "Date") {
           message("Variables: ", paste0(names(data)[dates.ind], sep = ", "), 
                   "are of class 'Date' or 'POSIXct'. These variables were ",
                   "coerced to numeric with 'as.numeric'.\n 'timevar' in ",
@@ -50,7 +50,7 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
                   "'tinterval' = ", 
                   ifelse(is.null(variable_options$tinterval), 1, 
                          variable_options$tinterval), " means that the time ",
-                  "between consecutive observations is", 
+                  "between consecutive observations is ", 
                   ifelse(is.null(variable_options$tinterval), 1, 
                          variable_options$tinterval), " day(s).") 
         } else {
@@ -61,7 +61,7 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
                   "'tinterval' = ", 
                   ifelse(is.null(variable_options$tinterval), 1, 
                          variable_options$tinterval), " means that the time ",
-                  "between consecutive observations is", 
+                  "between consecutive observations is ", 
                   ifelse(is.null(variable_options$tinterval), 1, 
                          variable_options$tinterval), " second(s).")
         }
@@ -93,7 +93,7 @@ var2Mplus <- function(y, x = NULL, data, lags = 1,
                                                              length(x))))
   } else {
     variable_syntax <- do.call(variable.options, 
-                               c(list(usevar = c(y, x, timevar),
+                               c(list(usevar = c(y, x, variable_options$timevar),
                                       lagged = c(y, x),
                                       lags = rep(c(lags, 1),
                                                  times = c(length(y), 

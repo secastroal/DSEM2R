@@ -40,13 +40,29 @@ names(ardata) <- c("day", "beep", paste0("y", 1:2), paste0("x", 1:C))
 rm(y, x, C, nT, day, beeps)
 
 
-# Example write AR(1) Mplus syntax.
-var2Mplus(y = "y1", data = ardata, filename = "test1.dat")
+# Example 6.23 in Mplus user's guide.
+var2Mplus(y = "y1", data = ardata, filename = "ex6.23.dat")
+runModels("ex6.23.inp")
 
-# Example write VAR(1) Mplus syntax. 
-var2Mplus(y = c("y1", "y2"), data = ardata, filename = "test2.dat")
+# Example 6.23b in Mplus user's guide.
+var2Mplus(y = "y1", data = ardata, lags = 2, filename = "ex6.23b.dat")
+runModels("ex6.23b.inp")
 
-# Run models
+# Example 6.23c in Mplus user's guide.
+var2Mplus(y = "y1", data = ardata, lags = 2, 
+          lag.at.0 = c(TRUE, FALSE), filename = "ex6.23c.dat")
+runModels("ex6.23c.inp")
 
-runModels("test1.inp")
-runModels("test2.inp")
+# Example 6.24 in Mplus user's guide.
+var2Mplus(y = "y1", x = "x1", data = ardata, filename = "ex6.24.dat")
+runModels("ex6.24.inp")
+
+# Example 6.25 in Mplus user's guide.
+var2Mplus(y = c("y1", "y2"), data = ardata, filename = "ex6.25.dat")
+runModels("ex6.25.inp")
+
+# Example 6.25 in Mplus user's guide including tinterval option
+var2Mplus(y = c("y1", "y2"), data = ardata, filename = "ex6.25b.dat",
+          variable_options = list(timevar = "day"))
+runModels("ex6.25b.inp")
+
