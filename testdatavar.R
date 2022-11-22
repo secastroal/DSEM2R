@@ -99,3 +99,52 @@ runModels("ex6.25f.inp")
 # Example 6.25 in Mplus user's guide using column number instead of column name
 var2Mplus(y = 3:4, data = ardata, filename = "ex6.25g.dat")
 runModels("ex6.25g.inp")
+
+# Repeat analysis with mlVAR
+library("mlVAR")
+ardata$sub <- rep(1, nrow(ardata))
+
+mlVAR(ardata, vars = "y1", idvar = "sub", lags = 1, temporal = "fixed", 
+      contemporaneous = "fixed")
+mlVAR(ardata, vars = "y1",lags = 1, temporal = "fixed")
+
+
+# Simulate data:
+Model <- mlVARsim(nPerson = 50, nNode = 3, nTime = 50, lag=1)
+Model$Data$beep <- c(replicate(50, sort(sample(1:90, 50))))
+
+# Estimate using correlated random effects:
+fit0 <- mlVAR(Model$Data, vars = Model$vars, idvar = Model$idvar, 
+              lags = 1, temporal = "correlated", contemporaneous = "fixed")
+# Print some pointers:
+print(fit0)
+# Summary of all parameter estimates:
+summary(fit0)
+
+# Estimate using correlated random effects:
+fit1 <- mlVAR(Model$Data, vars = Model$vars, idvar = Model$idvar, 
+              lags = 1, temporal = "correlated", contemporaneous = "fixed",
+              estimator = "Mplus", MplusName = "fit1")
+# Print some pointers:
+print(fit1)
+# Summary of all parameter estimates:
+summary(fit1)
+
+fit1output <- readModels("fit1.out")
+
+fit1samples <- fit1output$bparameters$valid_draw
+
+mean(fit1samples[, "Parameter.7_%BETWEEN%:.MEAN.PAR1"])
+
+
+
+fit2 <- mlVAR(Model$Data, vars = Model$vars, idvar = Model$idvar, beepvar = "beep", 
+              lags = 1, temporal = "correlated", contemporaneous = "fixed",
+              estimator = "Mplus", MplusName = "fit2")
+# Print some pointers:
+print(fit2)
+# Summary of all parameter estimates:
+summary(fit2)
+
+
+

@@ -112,7 +112,8 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
     dates.ind         <- which(var.classes == "Date" | var.classes == "POSIXct")
     
     for (i in 1:length(dates.ind)) {
-      data[, dates.ind[i]] <- as.numeric(data[, dates.ind[i]]) 
+      data[, dates.ind[i]] <- as.numeric(data[, dates.ind[i]] - 
+                                           min(data[, dates.ind[i]]) + 1) 
     }
     rm(i)
     
