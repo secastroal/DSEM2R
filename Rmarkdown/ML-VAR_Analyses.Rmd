@@ -62,6 +62,25 @@ summary(mlvardata[, 7:14])
 
 The emotions were measured based on a VAS from 0 to 100. However, there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations on the variable interest with scores lower than 0.
 
+```{r}
+mlvardata[mlvardata[, "interest"] < 0 & !is.na(mlvardata[, "interest"]), c("lifepak_id", "interest", "sad")]
+# remove these 2 subjects
+unique(mlvardata[mlvardata[, "interest"] < 0 & !is.na(mlvardata[, "interest"]), c("lifepak_id", "interest", "sad")][, 1]
+)
+
+negdata <- mlvardata[mlvardata$lifepak_id == 230042 | mlvardata$lifepak_id == 682098, c("lifepak_id", "interest", "sad")]
+
+plot.ts(negdata$interest[negdata$lifepak_id == 230042])
+plot.ts(negdata$interest[negdata$lifepak_id == 682098])
+```
+
+
+```{r}
+head(mlvardata[mlvardata$completed_session == 1 & is.na(mlvardata$sad),])
+head(mlvardata[mlvardata$completed_session == 0,])
+```
+
+
 The data includes responses from `r nsub(mlvardata$lifepak_id)` participants who replied between `r min(calc.nomiss(interest, lifepak_id, mlvardata))` and `r max(calc.nomiss(interest, lifepak_id, mlvardata))` times. In particular, the distribution of the compliance is presented in the following Figure:
 
 ```{r compliance, fig.cap = "Compliance on variable 'interest'"}
@@ -91,5 +110,36 @@ hist(mlvardata$sad,
      breaks = 40)
 ```
 
+The following code confirms the histograms are correct.
+
+```{r}
+sum(mlvardata$sad == 0, na.rm = TRUE)
+sum(mlvardata$sad == 50, na.rm = TRUE)
+sum(mlvardata$sad == 100, na.rm = TRUE)
+
+sum(mlvardata$interest == 0, na.rm = TRUE)
+sum(mlvardata$interest == 50, na.rm = TRUE)
+sum(mlvardata$interest == 100, na.rm = TRUE)
+```
+
+```{r}
+mlvardata_60plus <- mlvardata[!(mlvardata$lifepak_id %in% c(230042, 692098)), ]
+
+mlvardata_60plus$ind_nomiss <- ifelse(is.na(mlvardata_60plus$interest) & is.na(mlvardata_60plus$sad), NA, 1)
+
+complianceboth <- calc.nomiss(ind_nomiss, lifepak_id, mlvardata_60plus)
+
+names(which(complianceboth >= 60))
+
+mlvardata_60plus <- mlvardata_60plus[mlvardata_60plus$lifepak_id %in% as.numeric(names(which(complianceboth >= 60))), ]
+
+```
 
 
+Fit lm with trend (check kpss) and if it is significant plot time series of those individuals
+
+check if there is enough variance... what is considered enough variance? sd of minimum 10% of the scale... meaning minimum sd must be 10.
+
+Plot all the time series per person more than 60 time points.
+
+For multilevel include everybody that has more than 3 observations.
