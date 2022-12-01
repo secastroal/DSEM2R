@@ -10,6 +10,9 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
   
   require(MplusAutomation)
   
+  # Save filename
+  origfilename <- filename
+  
   # check if 'data' argument has been specified
   
   if (missing(data))
@@ -164,7 +167,8 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
             )
   }
   
-  prepareMplusData(data, filename = filename, inpfile = inpfile, ...)
+  suppressWarnings(prepareMplusData(data, filename = filename, 
+                                    inpfile = inpfile, ...))
   
   if (missing(variable_options)) {
     variable_syntax <- variable.options(usevar = c(y, x, time),
@@ -193,12 +197,15 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
                             lag.at.0 = lag.at.0, beta.at.0 = beta.at.0)
   
   if (missing(output_options)) {
-    output_syntax <- output.options()
+    output_syntax <- output.options(
+      save = list(
+        bparameters = gsub("(.*)\\..*$", "\\1_samples.dat", origfilename)
+        )
+      )
   } else {
     output_syntax <- do.call(output.options, c(output_options))
   }
   
-  origfilename <- filename
   
   if (is.logical(inpfile) && inpfile) {
     inpfile <- gsub("(.*)\\..*$", "\\1.inp", origfilename)
@@ -210,4 +217,10 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
   write(paste0(output_syntax, "\n"), inpfile, append = TRUE)
   
   writeLines(readLines(inpfile))
+  
+  runModels(inpfile)
+  
+  Mplusoutput <- readModels(gsub("(.*)\\..*$", "\\1.out", origfilename))
+  
+  return(Mplusoutput)
 }

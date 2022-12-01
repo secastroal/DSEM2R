@@ -50,12 +50,10 @@ if (C == 0) {
 rm(y, x, C, nT, M, day, beeps, t.trend)
 
 # Example 6.23 in Mplus user's guide.
-var2Mplus(y = "y1", data = ardata, filename = "ex6.23.dat")
-runModels("ex6.23.inp")
+ex6.23 <- var2Mplus(y = "y1", data = ardata, filename = "ex6.23.dat")
 
 # Example 6.23b in Mplus user's guide.
-var2Mplus(y = "y1", data = ardata, lags = 2, filename = "ex6.23b.dat")
-runModels("ex6.23b.inp")
+ex6.23b <- var2Mplus(y = "y1", data = ardata, lags = 2, filename = "ex6.23b.dat")
 
 # Example 6.23c in Mplus user's guide.
 var2Mplus(y = "y1", data = ardata, lags = 2, 
@@ -122,6 +120,14 @@ print(fit0)
 summary(fit0)
 
 # Estimate using correlated random effects:
+fit00 <- mlVAR(Model$Data, vars = Model$vars, idvar = Model$idvar, 
+              lags = 1, temporal = "correlated", AR = TRUE)
+# Print some pointers:
+print(fit00)
+# Summary of all parameter estimates:
+summary(fit00)
+
+# Estimate using correlated random effects:
 fit1 <- mlVAR(Model$Data, vars = Model$vars, idvar = Model$idvar, 
               lags = 1, temporal = "correlated", contemporaneous = "fixed",
               estimator = "Mplus", MplusName = "fit1")
@@ -135,6 +141,15 @@ fit1output <- readModels("fit1.out")
 fit1samples <- fit1output$bparameters$valid_draw
 
 mean(fit1samples[, "Parameter.7_%BETWEEN%:.MEAN.PAR1"])
+median(fit1samples[, "Parameter.7_%BETWEEN%:.MEAN.PAR1"])
+median(fit1samples[, "Parameter.8_%BETWEEN%:.MEAN.PAR2"])
+median(fit1samples[, "Parameter.9_%BETWEEN%:.MEAN.PAR3"])
+median(fit1samples[, "Parameter.10_%BETWEEN%:.MEAN.PAR4"])
+median(fit1samples[, "Parameter.11_%BETWEEN%:.MEAN.PAR5"])
+
+# Compare lm and Mplus results
+mean(abs(Model$model$Beta$mean - fit0$results$Beta$mean))
+mean(abs(Model$model$Beta$mean - fit1$results$Beta$mean))
 
 
 
