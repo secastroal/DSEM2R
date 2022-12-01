@@ -1,0 +1,95 @@
+---
+title: "ML-VAR Analyses"
+author:
+  - Sebastian Castro-Alvarez
+  - Laura F. Bringmann
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  bookdown::word_document2:
+    fig_caption: yes
+    number_sections: FALSE
+    reference_docx: APAtemplate.docx
+bibliography: references.bib
+csl: apa7.csl
+link-citations: true
+always_allow_html: true
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(bookdown)
+library(pander)
+knitr::opts_chunk$set(echo = TRUE, fig.height = 4, fig.width = 6, fig.pos = "!H",  
+                      warning=FALSE, message=FALSE)
+
+panderOptions('table.alignment.default', function(df)
+  ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+panderOptions('keep.trailing.zeros', TRUE)
+
+# Use this code to render the document:
+# Render the document to a .docx file.
+# rmarkdown::render("Rmarkdown/ML-VAR_Analyses.Rmd") 
+```
+
+In this document, we analyze intensive longitudinal data on the emotions sad and interest.
+
+```{r}
+if (!"psych" %in% rownames(installed.packages())) {install.packages("psych")}
+if (!"naniar" %in% rownames(installed.packages())) {install.packages("naniar")}
+if (!"lubridate" %in% rownames(installed.packages())) {install.packages("lubridate")}
+if (!"esmpack" %in% rownames(installed.packages())) {
+  remotes::install_github("secastroal/esmpack")
+  }
+library(esmpack)
+library(foreign)
+```
+
+## Reading Data
+
+```{r}
+mlvardata <- read.csv2("deid_cleaned_lifepak_ttt_phase_1.csv", 
+                       header = TRUE, sep = ",")
+```
+
+The data has 14 variables: ID, response number, beep time, response time, time difference (unclear in relation to what), beep completed, and scores on 6 emotions.
+
+```{r}
+summary(mlvardata[, 7:14])
+```
+
+The emotions were measured based on a VAS from 0 to 100. However, there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations on the variable interest with scores lower than 0.
+
+The data includes responses from `r nsub(mlvardata$lifepak_id)` participants who replied between `r min(calc.nomiss(interest, lifepak_id, mlvardata))` and `r max(calc.nomiss(interest, lifepak_id, mlvardata))` times. In particular, the distribution of the compliance is presented in the following Figure:
+
+```{r compliance, fig.cap = "Compliance on variable 'interest'"}
+hist(calc.nomiss(interest, lifepak_id, mlvardata),
+     ylim = c(0, 8),
+     xlim = c(0, 120),
+     xlab = "Number of complied beeps",
+     las = 1,
+     breaks = 40,
+     main = "")
+
+```
+
+```{r}
+par(mfrow = c(1, 2))
+hist(mlvardata$interest, 
+     main = "",
+     las = 1,
+     ylim = c(0, 3000),
+     xlab = "Interest",
+     breaks = 40)
+hist(mlvardata$sad,
+     main = "",
+     las = 1,
+     ylim = c(0, 3000),
+     xlab = "Sad",
+     breaks = 40)
+```
+
+
+
