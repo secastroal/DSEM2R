@@ -272,6 +272,10 @@ for (i in 1:length(ids)) {
           main = paste0("Subject ID = ", ids[i]),
           col =1:2,
           las = 1)
+  mtext(paste0("Interest: Mean = ", mean(data_var[data_var$lifepak_id == ids[i], "interest"], na.rm = TRUE), 
+        ", sd =", sd(data_var[data_var$lifepak_id == ids[i], "interest"], na.rm = TRUE)), 3, at = 1, line= 2)
+  mtext(paste0("Sad: Mean = ", mean(data_var[data_var$lifepak_id == ids[i], "sad"], na.rm = TRUE), 
+        ", sd =", sd(data_var[data_var$lifepak_id == ids[i], "sad"], na.rm = TRUE)), 3, at = 1)
 }
 dev.off()
 
@@ -283,7 +287,12 @@ Fit lm with trend (check kpss) and if it is significant plot time series of thos
 
 check if there is enough variance... what is considered enough variance? sd of minimum 10% of the scale... meaning minimum sd must be 10.
 
-Plot all the time series per person more than 60 time points.
+In ML VAR try with and without sd lower than 10 on both, in VAr only without sd lower than 10.
+
+Do the analysis with time trend. Maybe with the actual time (depending how hard it is to turn that into reasonable numbers) otherwise with beep number.
+
+Start running the analysis... how similar are the coefficients of VAR and ML-VAR? get centrality measures of the coefficients.
+
 
 
 
