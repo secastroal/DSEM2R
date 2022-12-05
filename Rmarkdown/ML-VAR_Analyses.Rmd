@@ -34,57 +34,134 @@ panderOptions('keep.trailing.zeros', TRUE)
 # rmarkdown::render("Rmarkdown/ML-VAR_Analyses.Rmd") 
 ```
 
-In this document, we analyze intensive longitudinal data on the emotions sad and interest.
+In this document, we analyze intensive longitudinal data of emotion dynamics. To analyze these data we use the multilevel-vector autoregressive model (ML-VAR) and the vector autoregressive model (VAR). We also include all R code needed to run and replicate the analyses.
+
+To start, we first load into our R environment all the required R packages:
 
 ```{r}
-if (!"psych" %in% rownames(installed.packages())) {install.packages("psych")}
-if (!"naniar" %in% rownames(installed.packages())) {install.packages("naniar")}
-if (!"lubridate" %in% rownames(installed.packages())) {install.packages("lubridate")}
-if (!"esmpack" %in% rownames(installed.packages())) {
+packages <- rownames(installed.packages())
+if (!"psych" %in% packages) {install.packages("psych")}
+if (!"naniar" %in% packages) {install.packages("naniar")}
+if (!"lubridate" %in% packages) {install.packages("lubridate")}
+if (!"remotes" %in% packages) {install.packages("remotes")}
+if (!"esmpack" %in% packages) {
   remotes::install_github("secastroal/esmpack")
   }
 library(esmpack)
 library(foreign)
+rm(packages)
 ```
 
-## Reading Data
+## Data Preprocessing
+
+In this section, we read and clean the data to obtain the final sample that we use for the analyses. 
 
 ```{r}
 mlvardata <- read.csv2("deid_cleaned_lifepak_ttt_phase_1.csv", 
                        header = TRUE, sep = ",")
 ```
 
-The data has 14 variables: ID, response number, beep time, response time, time difference (unclear in relation to what), beep completed, and scores on 6 emotions.
+The data has 14 variables: ID, response number, beep time, response time, time difference (probably how long did it take the person to complete the questionnaire), beep completed (variable indicating that the person 'completed' the questionnaire on that beep), and scores on 6 emotions.
+
+We get a quick summary of the emotion scores as follows:
 
 ```{r}
 summary(mlvardata[, 7:14])
 ```
 
-The emotions were measured based on a VAS from 0 to 100. However, there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations on the variable interest with scores lower than 0.
+This shows that the emotions were measured based on a visual analogue scale (VAS) from 0 to 100. For these analyses, we focus on the emotions *interest* and *sad*. Notice, that there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations with negative scores on the variable *interest*. As this should not be the case, we further explore these observations. 
+
+First, we create a subset of the data that only includes these observations and the variables *ID*, *interest*, and *sad*:
 
 ```{r}
-mlvardata[mlvardata[, "interest"] < 0 & !is.na(mlvardata[, "interest"]), c("lifepak_id", "interest", "sad")]
-# remove these 2 subjects
-unique(mlvardata[mlvardata[, "interest"] < 0 & !is.na(mlvardata[, "interest"]), c("lifepak_id", "interest", "sad")][, 1]
-)
-
-negdata <- mlvardata[mlvardata$lifepak_id == 230042 | mlvardata$lifepak_id == 682098, c("lifepak_id", "interest", "sad")]
-
-plot.ts(negdata$interest[negdata$lifepak_id == 230042])
-plot.ts(negdata$interest[negdata$lifepak_id == 682098])
+mlvardata_minus0 <- mlvardata[mlvardata[, "interest"] < 0 & 
+                                !is.na(mlvardata[, "interest"]), 
+                              c("lifepak_id", "interest", "sad")]
 ```
 
+The negative scores either -1 or -2 and come from `r nsub(mlvardata_minus0$lifepak_id)` subjects. The complete data of these subjects is stored in the following data.frame: 
 
 ```{r}
-head(mlvardata[mlvardata$completed_session == 1 & is.na(mlvardata$sad),])
-head(mlvardata[mlvardata$completed_session == 0,])
+mlvardata_neg <- mlvardata[mlvardata$lifepak_id %in% 
+                             unique(mlvardata_minus0$lifepak_id), 
+                           c("lifepak_id", "interest", "sad")]
 ```
 
+Moreover, the observed time series of these `r nsub(mlvardata_minus0$lifepak_id)` subjects are presented in the following Figure:
 
-The data includes responses from `r nsub(mlvardata$lifepak_id)` participants who replied between `r min(calc.nomiss(interest, lifepak_id, mlvardata))` and `r max(calc.nomiss(interest, lifepak_id, mlvardata))` times. In particular, the distribution of the compliance is presented in the following Figure:
+```{r tsminus0, fig.cap = paste0("Time series of the variable 'interest' of the ", nsub(mlvardata_minus0$lifepak_id), " subjects with scores lower than 0.")}
+par(mfrow = c(2, 1), mar = c(4, 4, 1, 2) + 0.1)
+
+plot.ts(mlvardata_neg$interest[mlvardata_neg$lifepak_id == 
+                                 unique(mlvardata_minus0$lifepak_id)[1]],
+        ylab = "Interest", ylim = c(-5, 100),
+        xlab = "", xlim = c(0, 110), las = 1)
+mtext(paste0("ID = ", unique(mlvardata_minus0$lifepak_id)[1]), 3, at = 100)
+plot.ts(mlvardata_neg$interest[mlvardata_neg$lifepak_id ==
+                                 unique(mlvardata_minus0$lifepak_id)[2]],
+        ylab = "Interest", ylim = c(-5, 100),
+        xlab = "Beep", xlim = c(0, 110), las = 1)
+mtext(paste0("ID = ", unique(mlvardata_minus0$lifepak_id)[2]), 3, at = 100)
+
+```
+
+As the data from these subjects is not reliable, we decide to exclude them from the analyses. Thus, we create another data.frame without their data.
+
+```{r}
+mlvardata02 <- mlvardata[!(mlvardata$lifepak_id %in% 
+                             unique(mlvardata_minus0$lifepak_id)), ]
+```
+
+```{r, echo = FALSE}
+rm(mlvardata_minus0, mlvardata_neg)
+```
+
+Now, we also create two subsets of the data. The first subset includes the whole sample and we use the ML-VAR to analyze this data. In this case, we also exclude subjects with less than 5 observations. The second subset includes subjects that complied with at least 60 observations on both variables (*interest* and *sad*). We use the VAR model to analyze the data of each individual on this dataset.
+
+We create the first subset as follows:
+
+```{r}
+# Get compliance per subject for 'interest'
+comp_interest <- calc.nomiss(interest, lifepak_id, mlvardata02)
+
+# Get IDs of subjects with less than 5 responses
+id_exclude <- as.numeric(names(which(comp_interest < 5)))
+
+# Exclude subjects with less than 5 responses
+data_mlvar <- mlvardata02[!(mlvardata02$lifepak_id %in% id_exclude), ]
+```
+
+For the second subset, we first create a variable that indicates if the person has a valid scores on both variables *interest* and *sad*, then, based on this new variable, we select the individuals with more than 60 observations. 
+
+```{r}
+# Create indicator variable of valid scores on 'interest' and 'sad'
+mlvardata02$ind_nomiss <- ifelse(is.na(mlvardata02$interest) &
+                                   is.na(mlvardata02$sad), NA, 1)
+
+# Get compliance on both variables per person
+comp_both <- calc.nomiss(ind_nomiss, lifepak_id, mlvardata02)
+
+# Get IDs of subjects with 60 or more responses on both variables
+id_include <- as.numeric(names(which(comp_both >= 60)))
+
+# Exclude subjects with less than 60 responses on both variables
+data_var <- mlvardata02[mlvardata02$lifepak_id %in% id_include, ]
+
+# Remove indicator variable in final subset
+data_var <- data_var[, 1:14]
+
+```
+
+```{r, echo = FALSE}
+rm(mlvardata, mlvardata02, comp_both, comp_interest, id_exclude, id_include)
+```
+
+## Sample's Descriptives
+
+After cleaning the data, we get that ML-VAR data includes responses from `r nsub(data_mlvar$lifepak_id)` participants. These participants replied between `r min(calc.nomiss(interest, lifepak_id, data_mlvar))` and `r max(calc.nomiss(interest, lifepak_id, data_mlvar))` beeps. In particular, the distribution of the compliance is presented in Figure \@ref(fig:compliance):
 
 ```{r compliance, fig.cap = "Compliance on variable 'interest'"}
-hist(calc.nomiss(interest, lifepak_id, mlvardata),
+hist(calc.nomiss(interest, lifepak_id, data_mlvar),
      ylim = c(0, 8),
      xlim = c(0, 120),
      xlab = "Number of complied beeps",
@@ -94,18 +171,41 @@ hist(calc.nomiss(interest, lifepak_id, mlvardata),
 
 ```
 
-```{r}
+We can also see the distribution of the missing values in the following Figure:
+
+```{r heatmapinterest, fig.cap = "Missing values visualization of the variable 'interest'"}
+tmp <- reshape(na.omit(data_mlvar[, c(1, 2, 12)]), 
+               direction = "wide", 
+               idvar = "lifepak_id", 
+               timevar = "response_no")
+naniar::vis_miss(tmp[, -1], show_perc_col = FALSE)
+rm(tmp)
+```
+
+```{r heatmapsad, fig.cap = "Missing values visualization of the variable 'sad'"}
+tmp <- reshape(na.omit(data_mlvar[, c(1, 2, 14)]), 
+               direction = "wide", 
+               idvar = "lifepak_id", 
+               timevar = "response_no")
+naniar::vis_miss(tmp[, -1], show_perc_col = FALSE)
+rm(tmp)
+```
+
+
+
+
+```{r hist, fig.cap="Overall distribution of the variables 'interest' and 'sad'"}
 par(mfrow = c(1, 2))
-hist(mlvardata$interest, 
+hist(data_mlvar$interest, 
      main = "",
      las = 1,
-     ylim = c(0, 3000),
+     ylim = c(0, 2000),
      xlab = "Interest",
      breaks = 40)
-hist(mlvardata$sad,
+hist(data_mlvar$sad,
      main = "",
      las = 1,
-     ylim = c(0, 3000),
+     ylim = c(0, 2000),
      xlab = "Sad",
      breaks = 40)
 ```
@@ -113,27 +213,16 @@ hist(mlvardata$sad,
 The following code confirms the histograms are correct.
 
 ```{r}
-sum(mlvardata$sad == 0, na.rm = TRUE)
-sum(mlvardata$sad == 50, na.rm = TRUE)
-sum(mlvardata$sad == 100, na.rm = TRUE)
+sum(data_mlvar$sad == 0, na.rm = TRUE)
+sum(data_mlvar$sad == 50, na.rm = TRUE)
+sum(data_mlvar$sad == 100, na.rm = TRUE)
 
-sum(mlvardata$interest == 0, na.rm = TRUE)
-sum(mlvardata$interest == 50, na.rm = TRUE)
-sum(mlvardata$interest == 100, na.rm = TRUE)
+sum(data_mlvar$interest == 0, na.rm = TRUE)
+sum(data_mlvar$interest == 50, na.rm = TRUE)
+sum(data_mlvar$interest == 100, na.rm = TRUE)
 ```
 
-```{r}
-mlvardata_60plus <- mlvardata[!(mlvardata$lifepak_id %in% c(230042, 692098)), ]
 
-mlvardata_60plus$ind_nomiss <- ifelse(is.na(mlvardata_60plus$interest) & is.na(mlvardata_60plus$sad), NA, 1)
-
-complianceboth <- calc.nomiss(ind_nomiss, lifepak_id, mlvardata_60plus)
-
-names(which(complianceboth >= 60))
-
-mlvardata_60plus <- mlvardata_60plus[mlvardata_60plus$lifepak_id %in% as.numeric(names(which(complianceboth >= 60))), ]
-
-```
 
 
 Fit lm with trend (check kpss) and if it is significant plot time series of those individuals
@@ -142,4 +231,6 @@ check if there is enough variance... what is considered enough variance? sd of m
 
 Plot all the time series per person more than 60 time points.
 
-For multilevel include everybody that has more than 3 observations.
+## Individuals' Descriptives
+
+
