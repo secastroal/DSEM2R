@@ -171,7 +171,7 @@ hist(calc.nomiss(interest, lifepak_id, data_mlvar),
 
 ```
 
-We can also see the distribution of the missing values in the following Figure:
+We can also see the distribution of the missing values on both variables in the following Figures:
 
 ```{r heatmapinterest, fig.cap = "Missing values visualization of the variable 'interest'"}
 tmp <- reshape(na.omit(data_mlvar[, c(1, 2, 12)]), 
@@ -191,8 +191,7 @@ naniar::vis_miss(tmp[, -1], show_perc_col = FALSE)
 rm(tmp)
 ```
 
-
-
+Next, Figure @ref(fig:hist) presents the overall distribution of each variable of interest across the sample:
 
 ```{r hist, fig.cap="Overall distribution of the variables 'interest' and 'sad'"}
 par(mfrow = c(1, 2))
@@ -210,7 +209,7 @@ hist(data_mlvar$sad,
      breaks = 40)
 ```
 
-The following code confirms the histograms are correct.
+The distributions showed very high peaks at 0, 50 and 100. In particular the frecuency of each of these responses can be checked as follows:
 
 ```{r}
 sum(data_mlvar$sad == 0, na.rm = TRUE)
@@ -222,6 +221,61 @@ sum(data_mlvar$interest == 50, na.rm = TRUE)
 sum(data_mlvar$interest == 100, na.rm = TRUE)
 ```
 
+## Individuals' Descriptives
+
+For the VAR analyses, the sample got reduced to `r nsub(data_var$lifepak_id)` subjects. These individuals replied to at least 60 beeps on both variables of interest. Similarly as presented before, the distribution of the missing values is presented in Figures \@ref(fig:heatmapinterest2) and \@ref(fig:heatmapsad2).
+
+```{r heatmapinterest2, fig.cap = "Missing values visualization of the variable 'interest', VAR subset."}
+tmp <- reshape(na.omit(data_var[, c(1, 2, 12)]), 
+               direction = "wide", 
+               idvar = "lifepak_id", 
+               timevar = "response_no")
+naniar::vis_miss(tmp[, -1], show_perc_col = FALSE)
+rm(tmp)
+```
+
+```{r heatmapsad2, fig.cap = "Missing values visualization of the variable 'sad', VAR subset"}
+tmp <- reshape(na.omit(data_var[, c(1, 2, 14)]), 
+               direction = "wide", 
+               idvar = "lifepak_id", 
+               timevar = "response_no")
+naniar::vis_miss(tmp[, -1], show_perc_col = FALSE)
+rm(tmp)
+```
+
+Next, we look at the mean and standard deviation of each of the variables per person. To computes these descriptive, we use the following code:
+
+```{r}
+mean_interest <- tapply(data_var$interest, data_var$lifepak_id, mean, na.rm = TRUE) 
+mean_sad      <- tapply(data_var$sad, data_var$lifepak_id, mean, na.rm = TRUE) 
+
+sd_interest <- tapply(data_var$interest, data_var$lifepak_id, sd, na.rm = TRUE) 
+sd_sad      <- tapply(data_var$sad, data_var$lifepak_id, sd, na.rm = TRUE) 
+```
+
+```{r meanscat, fig.cap = "Scatterplot of intraindividual means of 'interest' and 'sad'."}
+plot(mean_interest, mean_sad)
+```
+
+
+```{r sdscat, fig.cap = "Scatterplot of intraindividual sd of 'interest' and 'sad'."}
+plot(sd_interest, sd_sad)
+abline(h = 10, col = gray(0.5))
+abline(v = 10, col = gray(0.5))
+```
+
+```{r}
+ids <- unique(data_var$lifepak_id)
+pdf("TimeSeries.pdf")
+for (i in 1:length(ids)) {
+  plot.ts(data_var[data_var$lifepak_id == ids[i], c("interest", "sad")],
+          main = paste0("Subject ID = ", ids[i]),
+          col =1:2,
+          las = 1)
+}
+dev.off()
+
+```
 
 
 
@@ -231,6 +285,5 @@ check if there is enough variance... what is considered enough variance? sd of m
 
 Plot all the time series per person more than 60 time points.
 
-## Individuals' Descriptives
 
 
