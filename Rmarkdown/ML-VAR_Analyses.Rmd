@@ -69,6 +69,14 @@ We get a quick summary of the emotion scores as follows:
 summary(mlvardata[, 7:14])
 ```
 
+```{r}
+mlvardata$notification_time <- as.POSIXct(gsub("T", "", 
+                                               mlvardata$notification_time))
+mlvardata$response_time     <- as.POSIXct(gsub("T", "",
+                                               mlvardata$response_time))
+```
+
+
 This shows that the emotions were measured based on a visual analogue scale (VAS) from 0 to 100. For these analyses, we focus on the emotions *interest* and *sad*. Notice, that there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations with negative scores on the variable *interest*. As this should not be the case, we further explore these observations. 
 
 First, we create a subset of the data that only includes these observations and the variables *ID*, *interest*, and *sad*:
@@ -260,8 +268,8 @@ plot(mean_interest, mean_sad)
 
 ```{r sdscat, fig.cap = "Scatterplot of intraindividual sd of 'interest' and 'sad'."}
 plot(sd_interest, sd_sad)
-abline(h = 10, col = gray(0.5))
-abline(v = 10, col = gray(0.5))
+abline(h = 9.5, col = gray(0.5))
+abline(v = 9.5, col = gray(0.5))
 ```
 
 ```{r}
@@ -269,18 +277,55 @@ ids <- unique(data_var$lifepak_id)
 pdf("TimeSeries.pdf")
 for (i in 1:length(ids)) {
   plot.ts(data_var[data_var$lifepak_id == ids[i], c("interest", "sad")],
-          main = paste0("Subject ID = ", ids[i]),
-          col =1:2,
-          las = 1)
-  mtext(paste0("Interest: Mean = ", mean(data_var[data_var$lifepak_id == ids[i], "interest"], na.rm = TRUE), 
-        ", sd =", sd(data_var[data_var$lifepak_id == ids[i], "interest"], na.rm = TRUE)), 3, at = 1, line= 2)
-  mtext(paste0("Sad: Mean = ", mean(data_var[data_var$lifepak_id == ids[i], "sad"], na.rm = TRUE), 
-        ", sd =", sd(data_var[data_var$lifepak_id == ids[i], "sad"], na.rm = TRUE)), 3, at = 1)
+          main = paste0("Subject ID = ", ids[i]), 
+          ylab = "Emotion Scores",
+          plot.type = "single", ylim = c(0, 100), 
+          col = gray(c(0.1, 0.5)), las = 1, lwd = 1.5)
+  mtext(paste0("Interest: Mean = ", 
+               round(mean(data_var[data_var$lifepak_id == ids[i], "interest"], 
+                          na.rm = TRUE), 2), ", sd =", 
+               round(sd(data_var[data_var$lifepak_id == ids[i], "interest"], 
+                        na.rm = TRUE), 2)), 
+        side = 3, at = 1, line= 0.8, adj = 0, cex = 0.7)
+  mtext(paste0("Sad: Mean = ", 
+               round(mean(data_var[data_var$lifepak_id == ids[i], "sad"], 
+                          na.rm = TRUE), 2), ", sd =", 
+               round(sd(data_var[data_var$lifepak_id == ids[i], "sad"], 
+                        na.rm = TRUE), 2)), 
+        side = 3, at = 1, adj = 0, cex = 0.7)
+  legend("bottomright", c("Interest", "Sad"), 
+         col = gray(c(0.1, 0.5)), lwd = 1.5, bg = "white")
 }
+rm(i)
 dev.off()
+```
+
+Also, for the individual VAR analyses, we remove participants with standard deviation lower than 9.5 on either of the two variables:
+
+```{r}
+sd_lower <- ifelse(sd_interest < 9.5 | sd_sad < 9.5, TRUE, FALSE)
+sd_exclude <- as.numeric(names(which(sd_lower)))
+
+data_var <- data_var[!(data_var$lifepak_id %in% sd_exclude), ]
+ids <- unique(data_var$lifepak_id)
+```
+
+
+
+```{r}
+correlations <- rep(NA, length(ids))
+
+for (i in 1:length(ids)) {
+  correlations[i] <- cor(data_var[data_var$lifepak_id == ids[i], "interest"],
+                         data_var[data_var$lifepak_id == ids[i], "sad"], 
+                         use = "complete.obs")
+}
 
 ```
 
+```{r}
+hist(correlations, breaks = 15)
+```
 
 
 Fit lm with trend (check kpss) and if it is significant plot time series of those individuals
