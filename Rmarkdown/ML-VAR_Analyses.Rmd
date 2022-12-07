@@ -49,6 +49,9 @@ if (!"esmpack" %in% packages) {
   }
 library(esmpack)
 library(foreign)
+library(MplusAutomation)
+
+invisible(lapply(list.files("../R/", full.names = TRUE), source))
 rm(packages)
 ```
 
@@ -320,13 +323,33 @@ for (i in 1:length(ids)) {
                          data_var[data_var$lifepak_id == ids[i], "sad"], 
                          use = "complete.obs")
 }
-
+rm(i)
 ```
 
 ```{r}
 hist(correlations, breaks = 15)
 ```
 
+## VAR Analyses per Person
+
+
+```{r}
+varfit <- list()
+
+if (!(dir.exists("Mplus"))) {dir.create("Mplus")}
+
+for (i in 1:length(ids)) {
+  tmp <- data_var[data_var$lifepak_id == ids[i], 
+                  c("response_no", "interest", "sad")]
+  tmp <- na.omit(tmp)
+  names(tmp) <- c("beep", "int", "sad")
+  
+  varfit[[i]] <- var2Mplus(y = c("int", "sad"), x = "beep", data = tmp,
+                           beta.at.0 = c(FALSE, TRUE),
+                           filename = paste0("Mplus/id", ids[i], ".dat"))
+}
+rm(i, tmp)
+```
 
 Fit lm with trend (check kpss) and if it is significant plot time series of those individuals
 
