@@ -333,10 +333,12 @@ hist(correlations, breaks = 15)
 ## VAR Analyses per Person
 
 
-```{r}
+```{r, results = 'hide'}
 varfit <- list()
 
 if (!(dir.exists("Mplus"))) {dir.create("Mplus")}
+
+setwd("Mplus/")
 
 for (i in 1:length(ids)) {
   tmp <- data_var[data_var$lifepak_id == ids[i], 
@@ -346,9 +348,36 @@ for (i in 1:length(ids)) {
   
   varfit[[i]] <- var2Mplus(y = c("int", "sad"), x = "beep", data = tmp,
                            beta.at.0 = c(FALSE, TRUE),
-                           filename = paste0("Mplus/id", ids[i], ".dat"))
+                           filename = paste0("id", ids[i], ".dat"))
 }
 rm(i, tmp)
+```
+
+
+```{r}
+results <- lapply(varfit, function(x) {
+  out <- cbind(paste0("par", 1:9), 
+               x$parameters$unstandardized[c(1:3, 5:7, 9, 12, 13), 
+                                           c(3, 6, 7)])
+  return(out)
+})
+
+results <- do.call(rbind, results)
+```
+
+
+```{r}
+tmp <- results[results$`paste0("par", 1:9)` == "par1", ]
+tmp <- tmp[order(tmp$est), ]
+```
+
+
+```{r}
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
 ```
 
 Fit lm with trend (check kpss) and if it is significant plot time series of those individuals
@@ -362,5 +391,10 @@ Do the analysis with time trend. Maybe with the actual time (depending how hard 
 Start running the analysis... how similar are the coefficients of VAR and ML-VAR? get centrality measures of the coefficients.
 
 
+```{r}
+tmp <- data_var[data_var$lifepak_id == ids[25], ]
+difftime(tail(tmp$notification_time, -1), head(tmp$notification_time, -1))
+difftime(tail(tmp$response_time, -1), head(tmp$response_time, -1))
+```
 
 
