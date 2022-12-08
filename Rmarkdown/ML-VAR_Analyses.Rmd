@@ -351,7 +351,7 @@ for (i in 1:length(ids)) {
   varfit[[i]] <- var2Mplus(y = c("int", "sad"), x = "beep", data = tmp,
                            beta.at.0 = c(FALSE, TRUE),
                            filename = paste0("id", ids[i], ".dat"),
-                           runmodel = !file.exists(paste0("id", ids[1], ".out")))
+                           runmodel = !file.exists(paste0("id", ids[i], ".out")))
 }
 rm(i, tmp)
 setwd("..")
@@ -373,16 +373,209 @@ results <- do.call(rbind, results)
 ```{r}
 tmp <- results[results$`paste0("par", 1:9)` == "par1", ]
 tmp <- tmp[order(tmp$est), ]
-```
-
-
-```{r}
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
 abline(h = 0)
+rm(tmp)
 ```
+
+
+```{r}
+tmp <- results[results$`paste0("par", 1:9)` == "par2", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+```{r}
+tmp <- results[results$`paste0("par", 1:9)` == "par3", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+```{r}
+tmp <- results[results$`paste0("par", 1:9)` == "par4", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+```{r}
+tmp <- results[results$`paste0("par", 1:9)` == "par5", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+```{r}
+tmp <- results[results$`paste0("par", 1:9)` == "par6", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+
+```{r, results = 'hide'}
+varfit <- list()
+
+if (!(dir.exists("Mplus"))) {dir.create("Mplus")}
+
+setwd("Mplus/")
+
+for (i in 1:length(ids)) {
+  tmp <- data_var[data_var$lifepak_id == ids[i], 
+                  c("response_no", "interest", "sad")]
+  tmp <- na.omit(tmp)
+  names(tmp) <- c("beep", "int", "sad")
+  
+  varfit[[i]] <- var2Mplus(y = c("int", "sad"), data = tmp,
+                           variable_options = list(timevar = "beep", tinterval = 1),
+                           filename = paste0("id", ids[i], "tinterval.dat"),
+                           runmodel = !file.exists(paste0("id", ids[i],
+                                                          "tinterval.out"))
+                           )
+}
+rm(i, tmp)
+setwd("..")
+```
+
+
+```{r}
+results <- lapply(varfit, function(x) {
+  out <- cbind(paste0("par", c(1:2, 4:5, 7:9)), 
+               x$parameters$unstandardized[c(1:5, 8, 9), 
+                                           c(3, 6, 7)])
+  return(out)
+})
+
+results <- do.call(rbind, results)
+```
+
+
+```{r}
+tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par1", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+```{r}
+tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par2", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+
+```{r}
+tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par4", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+
+```{r}
+tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par5", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
+
+```{r, results = 'hide'}
+varfit <- list()
+
+if (!(dir.exists("Mplus"))) {dir.create("Mplus")}
+
+setwd("Mplus/")
+
+for (i in 1:length(ids)) {
+  tmp <- data_var[data_var$lifepak_id == ids[i], 
+                  c("response_time", "interest", "sad")]
+  tmp <- na.omit(tmp)
+  names(tmp) <- c("time", "int", "sad")
+  tmp$time <- (tmp$time - tmp$time[1])/3600 
+  
+  tmp$id <- 1
+  
+  esmpack::expand.esm(tmp, id = "id", time = "time", tinterval = 3)
+  
+  
+  varfit[[i]] <- var2Mplus(y = c("int", "sad"), data = tmp,
+                           variable_options = list(timevar = "beep", tinterval = 1),
+                           filename = paste0("id", ids[i], "tinterval.dat"),
+                           runmodel = !file.exists(paste0("id", ids[i],
+                                                          "tinterval.out"))
+                           )
+}
+rm(i, tmp)
+setwd("..")
+```
+
+
+```{r}
+results <- lapply(varfit, function(x) {
+  out <- cbind(paste0("par", c(1:2, 4:5, 7:9)), 
+               x$parameters$unstandardized[c(1:5, 8, 9), 
+                                           c(3, 6, 7)])
+  return(out)
+})
+
+results <- do.call(rbind, results)
+```
+
+
+```{r}
+tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par1", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
 
 Fit lm with trend (check kpss) and if it is significant plot time series of those individuals
 
