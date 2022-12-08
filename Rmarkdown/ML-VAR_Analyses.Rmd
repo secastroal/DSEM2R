@@ -598,4 +598,6 @@ difftime(tail(tmp$notification_time, -1), head(tmp$notification_time, -1))
 difftime(tail(tmp$response_time, -1), head(tmp$response_time, -1))
 ```
 
+Compare results with time trend and tinterval... explain, with tinterval no independent variable can be added at the within level. otherwise extract standardized residuals from lm(sad ~ time) and redo the analyses.check residuals of the var model with serial.test.
 
+check the correlations between tinterval and trend results. Scatterplots with color codding for significant pairs three colors.
