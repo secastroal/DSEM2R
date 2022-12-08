@@ -348,8 +348,7 @@ for (i in 1:length(ids)) {
   tmp <- na.omit(tmp)
   names(tmp) <- c("beep", "int", "sad")
   
-  varfit[[i]] <- var2Mplus(y = c("int", "sad"), x = "beep", data = tmp,
-                           beta.at.0 = c(FALSE, TRUE),
+  varfit[[i]] <- var2Mplus(y = c("int", "sad"), time = "beep", data = tmp,
                            filename = paste0("id", ids[i], ".dat"),
                            runmodel = !file.exists(paste0("id", ids[i], ".out")))
 }
@@ -359,19 +358,21 @@ setwd("..")
 
 
 ```{r}
+parameters <- paste0("par", 1:9)
 results <- lapply(varfit, function(x) {
-  out <- cbind(paste0("par", 1:9), 
-               x$parameters$unstandardized[c(1:3, 5:7, 9, 12, 13), 
+  out <- cbind(parameters, 
+               x$parameters$unstandardized[c(1:7, 10:11), 
                                            c(3, 6, 7)])
   return(out)
 })
 
 results <- do.call(rbind, results)
+rm(parameters)
 ```
 
 
 ```{r}
-tmp <- results[results$`paste0("par", 1:9)` == "par1", ]
+tmp <- results[results$parameters == "par1", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -383,7 +384,7 @@ rm(tmp)
 
 
 ```{r}
-tmp <- results[results$`paste0("par", 1:9)` == "par2", ]
+tmp <- results[results$parameters == "par2", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -394,7 +395,7 @@ rm(tmp)
 ```
 
 ```{r}
-tmp <- results[results$`paste0("par", 1:9)` == "par3", ]
+tmp <- results[results$parameters == "par3", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -405,7 +406,7 @@ rm(tmp)
 ```
 
 ```{r}
-tmp <- results[results$`paste0("par", 1:9)` == "par4", ]
+tmp <- results[results$parameters == "par4", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -416,7 +417,7 @@ rm(tmp)
 ```
 
 ```{r}
-tmp <- results[results$`paste0("par", 1:9)` == "par5", ]
+tmp <- results[results$parameters == "par5", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -427,7 +428,7 @@ rm(tmp)
 ```
 
 ```{r}
-tmp <- results[results$`paste0("par", 1:9)` == "par6", ]
+tmp <- results[results$parameters == "par6", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -464,19 +465,21 @@ setwd("..")
 
 
 ```{r}
+parameters <- paste0("par", c(1:2, 4:5, 7:9))
 results <- lapply(varfit, function(x) {
-  out <- cbind(paste0("par", c(1:2, 4:5, 7:9)), 
+  out <- cbind(parameters, 
                x$parameters$unstandardized[c(1:5, 8, 9), 
                                            c(3, 6, 7)])
   return(out)
 })
 
 results <- do.call(rbind, results)
+rm(parameters)
 ```
 
 
 ```{r}
-tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par1", ]
+tmp <- results[results$parameters == "par1", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -487,19 +490,7 @@ rm(tmp)
 ```
 
 ```{r}
-tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par2", ]
-tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
-segments(x0 = 1:53, 
-         y0 = tmp$lower_2.5ci,
-         y1 = tmp$upper_2.5ci)
-abline(h = 0)
-rm(tmp)
-```
-
-
-```{r}
-tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par4", ]
+tmp <- results[results$parameters == "par2", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -511,7 +502,7 @@ rm(tmp)
 
 
 ```{r}
-tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par5", ]
+tmp <- results[results$parameters == "par4", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
 segments(x0 = 1:53, 
@@ -520,6 +511,19 @@ segments(x0 = 1:53,
 abline(h = 0)
 rm(tmp)
 ```
+
+
+```{r}
+tmp <- results[results$parameters == "par5", ]
+tmp <- tmp[order(tmp$est), ]
+plot(tmp$est, ylim = c(-1, 1))
+segments(x0 = 1:53, 
+         y0 = tmp$lower_2.5ci,
+         y1 = tmp$upper_2.5ci)
+abline(h = 0)
+rm(tmp)
+```
+
 
 
 ```{r, results = 'hide'}
