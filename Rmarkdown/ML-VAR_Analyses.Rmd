@@ -311,6 +311,7 @@ sd_exclude <- as.numeric(names(which(sd_lower)))
 
 data_var <- data_var[!(data_var$lifepak_id %in% sd_exclude), ]
 ids <- unique(data_var$lifepak_id)
+rm(sd_lower, sd_exclude)
 ```
 
 
@@ -328,6 +329,7 @@ rm(i)
 
 ```{r}
 hist(correlations, breaks = 15)
+rm(correlations)
 ```
 
 ## VAR Analyses per Person
@@ -348,9 +350,11 @@ for (i in 1:length(ids)) {
   
   varfit[[i]] <- var2Mplus(y = c("int", "sad"), x = "beep", data = tmp,
                            beta.at.0 = c(FALSE, TRUE),
-                           filename = paste0("id", ids[i], ".dat"))
+                           filename = paste0("id", ids[i], ".dat"),
+                           runmodel = !file.exists(paste0("id", ids[1], ".out")))
 }
 rm(i, tmp)
+setwd("..")
 ```
 
 

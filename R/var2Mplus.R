@@ -6,7 +6,8 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
                       analysis_options,
                       output_options,
                       filename = NULL, 
-                      inpfile = TRUE, ...) {
+                      inpfile = TRUE,
+                      runmodel = TRUE, ...) {
   
   require(MplusAutomation)
   
@@ -218,7 +219,9 @@ var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1,
   
   writeLines(readLines(inpfile))
   
-  runModels(inpfile)
+  if (runmodel) {
+    runModels(inpfile)
+  }
   
   Mplusoutput <- readModels(gsub("(.*)\\..*$", "\\1.out", origfilename))
   
