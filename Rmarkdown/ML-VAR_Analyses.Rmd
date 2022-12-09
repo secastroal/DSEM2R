@@ -62,6 +62,7 @@ In this section, we read and clean the data to obtain the final sample that we u
 ```{r}
 mlvardata <- read.csv2("deid_cleaned_lifepak_ttt_phase_1.csv", 
                        header = TRUE, sep = ",")
+mlvardata <- mlvardata[order(mlvardata$lifepak_id), ]
 ```
 
 The data has 14 variables: ID, response number, beep time, response time, time difference (probably how long did it take the person to complete the questionnaire), beep completed (variable indicating that the person 'completed' the questionnaire on that beep), and scores on 6 emotions.
@@ -74,11 +75,26 @@ summary(mlvardata[, 7:14])
 
 ```{r}
 mlvardata$notification_time <- as.POSIXct(gsub("T", "", 
-                                               mlvardata$notification_time))
+                                               mlvardata$notification_time), 
+                                          tz = "GMT")
 mlvardata$response_time     <- as.POSIXct(gsub("T", "",
-                                               mlvardata$response_time))
+                                               mlvardata$response_time),
+                                          tz = "GMT")
 ```
 
+Turn response times into hours, the first observation of each subject is hour 1, form then on 
+
+```{r}
+tmp_time <- tapply(mlvardata$response_time, 
+                   mlvardata$lifepak_id, 
+                   FUN = function(x) {
+                     as.numeric(x) - as.numeric(min(x[which(!is.na(x))])) %/% 
+                       86400 * 86400
+                     }, 
+                   simplify = TRUE)
+
+mlvardata$response_time <- unlist(tmp_time)/3600
+```
 
 This shows that the emotions were measured based on a visual analogue scale (VAS) from 0 to 100. For these analyses, we focus on the emotions *interest* and *sad*. Notice, that there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations with negative scores on the variable *interest*. As this should not be the case, we further explore these observations. 
 
