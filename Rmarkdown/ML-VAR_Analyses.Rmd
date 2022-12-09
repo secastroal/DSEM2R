@@ -542,7 +542,7 @@ rm(tmp)
 
 
 
-```{r, results = 'hide'}
+```{r, results = 'hide', eval = FALSE}
 varfit <- list()
 
 if (!(dir.exists("Mplus"))) {dir.create("Mplus")}
@@ -573,7 +573,7 @@ setwd("..")
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 results <- lapply(varfit, function(x) {
   out <- cbind(paste0("par", c(1:2, 4:5, 7:9)), 
                x$parameters$unstandardized[c(1:5, 8, 9), 
@@ -585,7 +585,7 @@ results <- do.call(rbind, results)
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 tmp <- results[results$`paste0("par", c(1:2, 4:5, 7:9))` == "par1", ]
 tmp <- tmp[order(tmp$est), ]
 plot(tmp$est, ylim = c(-1, 1))
@@ -608,7 +608,7 @@ Do the analysis with time trend. Maybe with the actual time (depending how hard 
 Start running the analysis... how similar are the coefficients of VAR and ML-VAR? get centrality measures of the coefficients.
 
 
-```{r}
+```{r, eval = FALSE}
 tmp <- data_var[data_var$lifepak_id == ids[25], ]
 difftime(tail(tmp$notification_time, -1), head(tmp$notification_time, -1))
 difftime(tail(tmp$response_time, -1), head(tmp$response_time, -1))
