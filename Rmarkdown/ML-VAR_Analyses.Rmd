@@ -103,7 +103,8 @@ First, we create a subset of the data that only includes these observations and 
 ```{r}
 mlvardata_minus0 <- mlvardata[mlvardata[, "interest"] < 0 & 
                                 !is.na(mlvardata[, "interest"]), 
-                              c("lifepak_id", "interest", "sad")]
+                              c("lifepak_id", "response_time", 
+                                "interest", "sad")]
 ```
 
 The negative scores either -1 or -2 and come from `r nsub(mlvardata_minus0$lifepak_id)` subjects. The complete data of these subjects is stored in the following data.frame: 
@@ -111,7 +112,8 @@ The negative scores either -1 or -2 and come from `r nsub(mlvardata_minus0$lifep
 ```{r}
 mlvardata_neg <- mlvardata[mlvardata$lifepak_id %in% 
                              unique(mlvardata_minus0$lifepak_id), 
-                           c("lifepak_id", "interest", "sad")]
+                           c("lifepak_id", "response_time", 
+                             "interest", "sad")]
 ```
 
 Moreover, the observed time series of these `r nsub(mlvardata_minus0$lifepak_id)` subjects are presented in the following Figure:
@@ -319,6 +321,41 @@ rm(i)
 dev.off()
 ```
 
+
+```{r, echo = FALSE, eval = FALSE}
+ids <- unique(data_var$lifepak_id)
+pdf("TimeSeries_time.pdf")
+for (i in 1:length(ids)) {
+  plot(data_var[data_var$lifepak_id == ids[i], "response_time"],
+       data_var[data_var$lifepak_id == ids[i], "interest"],
+       main = paste0("Subject ID = ", ids[i]), 
+       xlab = "Time",
+       ylab = "Emotion Scores", type = "l",
+       ylim = c(0, 100), 
+       col = gray(0.1), las = 1, lwd = 1.5)
+  lines(data_var[data_var$lifepak_id == ids[i], "response_time"],
+        data_var[data_var$lifepak_id == ids[i], "sad"],
+        col = gray(0.5), lwd = 1.5)
+  mtext(paste0("Interest: Mean = ", 
+               round(mean(data_var[data_var$lifepak_id == ids[i], "interest"], 
+                          na.rm = TRUE), 2), ", sd =", 
+               round(sd(data_var[data_var$lifepak_id == ids[i], "interest"], 
+                        na.rm = TRUE), 2)), 
+        side = 3, at = 1, line= 0.8, adj = 0, cex = 0.7)
+  mtext(paste0("Sad: Mean = ", 
+               round(mean(data_var[data_var$lifepak_id == ids[i], "sad"], 
+                          na.rm = TRUE), 2), ", sd =", 
+               round(sd(data_var[data_var$lifepak_id == ids[i], "sad"], 
+                        na.rm = TRUE), 2)), 
+        side = 3, at = 1, adj = 0, cex = 0.7)
+  legend("bottomright", c("Interest", "Sad"), 
+         col = gray(c(0.1, 0.5)), lwd = 1.5, bg = "white")
+}
+rm(i)
+dev.off()
+```
+
+
 Also, for the individual VAR analyses, we remove participants with standard deviation lower than 9.5 on either of the two variables:
 
 ```{r}
@@ -360,11 +397,11 @@ setwd("Mplus/")
 
 for (i in 1:length(ids)) {
   tmp <- data_var[data_var$lifepak_id == ids[i], 
-                  c("response_no", "interest", "sad")]
+                  c("response_time", "interest", "sad")]
   tmp <- na.omit(tmp)
-  names(tmp) <- c("beep", "int", "sad")
+  names(tmp) <- c("time", "int", "sad")
   
-  varfit[[i]] <- var2Mplus(y = c("int", "sad"), time = "beep", data = tmp,
+  varfit[[i]] <- var2Mplus(y = c("int", "sad"), time = "time", data = tmp,
                            filename = paste0("id", ids[i], ".dat"),
                            runmodel = !file.exists(paste0("id", ids[i], ".out")))
 }
@@ -390,7 +427,7 @@ rm(parameters)
 ```{r}
 tmp <- results[results$parameters == "par1", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -402,7 +439,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par2", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -413,7 +450,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par3", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -424,7 +461,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par4", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -435,7 +472,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par5", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -446,7 +483,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par6", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -464,15 +501,18 @@ setwd("Mplus/")
 
 for (i in 1:length(ids)) {
   tmp <- data_var[data_var$lifepak_id == ids[i], 
-                  c("response_no", "interest", "sad")]
+                  c("response_time", "interest", "sad")]
   tmp <- na.omit(tmp)
-  names(tmp) <- c("beep", "int", "sad")
+  names(tmp) <- c("time", "int", "sad")
   
   varfit[[i]] <- var2Mplus(y = c("int", "sad"), data = tmp,
-                           variable_options = list(timevar = "beep", tinterval = 1),
+                           variable_options = list(timevar = "time", tinterval = 1),
+                           analysis_options = list(biterations.min = 10000,
+                                                   chains = 3),
                            filename = paste0("id", ids[i], "tinterval.dat"),
-                           runmodel = !file.exists(paste0("id", ids[i],
-                                                          "tinterval.out"))
+                           #runmodel = !file.exists(paste0("id", ids[i],
+                            #                              "tinterval.out"))
+                           runmodel = TRUE
                            )
 }
 rm(i, tmp)
@@ -497,7 +537,7 @@ rm(parameters)
 ```{r}
 tmp <- results[results$parameters == "par1", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -508,7 +548,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par2", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -520,7 +560,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par4", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -532,7 +572,7 @@ rm(tmp)
 ```{r}
 tmp <- results[results$parameters == "par5", ]
 tmp <- tmp[order(tmp$est), ]
-plot(tmp$est, ylim = c(-1, 1))
+plot(tmp$est, ylim = c(min(tmp$lower_2.5ci), max(tmp$upper_2.5ci)))
 segments(x0 = 1:53, 
          y0 = tmp$lower_2.5ci,
          y1 = tmp$upper_2.5ci)
@@ -540,7 +580,23 @@ abline(h = 0)
 rm(tmp)
 ```
 
+```{r, eval = FALSE, echo = FALSE}
+for (i in 1:length(ids)) {
+  tmp <- data_var[data_var$lifepak_id == ids[i], 
+                  c("response_time", "interest", "sad")]
+  tmp <- na.omit(tmp)
+  names(tmp) <- c("time", "int", "sad") 
+  
+  tmp$id <- 1
+  
+  
+  print(ids[i])
+  esmpack::expand.esm(tmp, id = "id", time = "time", tinterval = 1)
+}
+rm(tmp)
+```
 
+The following ids have two observations within the same time interval: 56591, 206517, 478498, 510530, 715428, 793985, and 816917.
 
 ```{r, results = 'hide', eval = FALSE}
 varfit <- list()
@@ -553,8 +609,7 @@ for (i in 1:length(ids)) {
   tmp <- data_var[data_var$lifepak_id == ids[i], 
                   c("response_time", "interest", "sad")]
   tmp <- na.omit(tmp)
-  names(tmp) <- c("time", "int", "sad")
-  tmp$time <- (tmp$time - tmp$time[1])/3600 
+  names(tmp) <- c("time", "int", "sad") 
   
   tmp$id <- 1
   
