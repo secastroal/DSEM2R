@@ -510,9 +510,9 @@ for (i in 1:length(ids)) {
                            analysis_options = list(biterations.min = 10000,
                                                    chains = 3),
                            filename = paste0("id", ids[i], "tinterval.dat"),
-                           #runmodel = !file.exists(paste0("id", ids[i],
-                            #                              "tinterval.out"))
-                           runmodel = TRUE
+                           runmodel = !file.exists(paste0("id", ids[i],
+                                                          "tinterval.out"))
+                           #runmodel = TRUE
                            )
 }
 rm(i, tmp)
