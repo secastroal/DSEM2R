@@ -82,7 +82,7 @@ mlvardata$response_time     <- as.POSIXct(gsub("T", "",
                                           tz = "GMT")
 ```
 
-Turn response times into hours, the first observation of each subject is hour 1, form then on 
+Turn response times into hours, the first observation of each subject is hour 1, from then on 
 
 ```{r}
 tmp_time <- tapply(mlvardata$response_time, 
@@ -95,6 +95,21 @@ tmp_time <- tapply(mlvardata$response_time,
 
 mlvardata$response_time <- unlist(tmp_time)/3600
 ```
+
+```{r}
+tmp_days <- tapply(mlvardata$notification_time, 
+                   mlvardata$lifepak_id,
+                   FUN = function (x) {
+                     table(as.Date(x))
+                   }) 
+
+table(unlist(tmp_days))
+
+as.numeric(as.Date(tmp$notification_time)) - min(as.numeric(as.Date(tmp$notification_time)))
+
+new_beep <- as.numeric(as.Date(tmp$notification_time)) - min(as.numeric(as.Date(tmp$notification_time))) + tmp$response_no
+```
+
 
 This shows that the emotions were measured based on a visual analogue scale (VAS) from 0 to 100. For these analyses, we focus on the emotions *interest* and *sad*. Notice, that there are `r sum(mlvardata[, "interest"] < 0, na.rm = TRUE)` observations with negative scores on the variable *interest*. As this should not be the case, we further explore these observations. 
 
