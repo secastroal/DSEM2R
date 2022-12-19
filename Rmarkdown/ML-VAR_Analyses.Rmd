@@ -102,7 +102,7 @@ tmp_days <- tapply(mlvardata$notification_time,
                    FUN = function (x) {
                      as.numeric(as.Date(x)) - min(as.numeric(as.Date(x)))
                    }) 
-mlvardata$response_no <- mlvardata$response_no + unlist(tmp_days)
+mlvardata$response_no_night <- mlvardata$response_no + unlist(tmp_days)
 ```
 
 
@@ -187,7 +187,7 @@ id_include <- as.numeric(names(which(comp_both >= 60)))
 data_var <- mlvardata02[mlvardata02$lifepak_id %in% id_include, ]
 
 # Remove indicator variable in final subset
-data_var <- data_var[, 1:14]
+data_var <- data_var[, 1:15]
 
 ```
 
@@ -407,7 +407,7 @@ setwd("Mplus/")
 
 for (i in 1:length(ids)) {
   tmp <- data_var[data_var$lifepak_id == ids[i], 
-                  c("response_time", "interest", "sad")]
+                  c("response_no_night", "interest", "sad")]
   tmp <- na.omit(tmp)
   names(tmp) <- c("time", "int", "sad")
   
@@ -682,3 +682,25 @@ difftime(tail(tmp$response_time, -1), head(tmp$response_time, -1))
 Compare results with time trend and tinterval... explain, with tinterval no independent variable can be added at the within level. otherwise extract standardized residuals from lm(sad ~ time) and redo the analyses.check residuals of the var model with serial.test.
 
 check the correlations between tinterval and trend results. Scatterplots with color codding for significant pairs three colors.
+
+## Multilevel VAR analysis
+
+```{r}
+setwd("Mplus/")
+data_mlvar_tmp <- data_mlvar[, c("lifepak_id", "response_no_night", "interest", "sad")]
+data_mlvar_tmp <- na.omit(data_mlvar_tmp)
+names(data_mlvar_tmp) <- c("id", "time", "int", "sad")
+prepareMplusData(data_mlvar_tmp, filename = "mlvar.dat", inpfile = TRUE)
+```
+
+```{r}
+setwd("Mplus/")
+runModels("mlvar.inp")
+mlvarfit <- readModels("mlvar.out")
+```
+
+
+```{r}
+mlvarfit
+```
+
