@@ -100,14 +100,9 @@ mlvardata$response_time <- unlist(tmp_time)/3600
 tmp_days <- tapply(mlvardata$notification_time, 
                    mlvardata$lifepak_id,
                    FUN = function (x) {
-                     table(as.Date(x))
+                     as.numeric(as.Date(x)) - min(as.numeric(as.Date(x)))
                    }) 
-
-table(unlist(tmp_days))
-
-as.numeric(as.Date(tmp$notification_time)) - min(as.numeric(as.Date(tmp$notification_time)))
-
-new_beep <- as.numeric(as.Date(tmp$notification_time)) - min(as.numeric(as.Date(tmp$notification_time))) + tmp$response_no
+mlvardata$response_no <- mlvardata$response_no + unlist(tmp_days)
 ```
 
 
