@@ -1,8 +1,8 @@
 # Mplus output options.
 
-output.options <- function (tech         = c(1, 8),
-                            standardized = FALSE,
-                            fcomparison  = FALSE,
+output.options <- function (tech          = c(1, 8),
+                            standardized  = FALSE,
+                            fscomparison  = FALSE,
                             save = list(bparameters = NULL,
                                         fscores     = NULL)) {
   if (standardized) {
@@ -11,16 +11,16 @@ output.options <- function (tech         = c(1, 8),
     standardized_syntax <- ""
   }
   
-  if (fcomparison) {
-    fcomparison_syntax <- "FCOMPARISON"
+  if (fscomparison) {
+    fscomparison_syntax <- "FSCOMPARISON"
   } else {
-    fcomparison_syntax <- ""
+    fscomparison_syntax <- ""
   }
   
   output_syntax <- paste0(paste("OUTPUT:",
                           paste(paste0("TECH", tech), collapse = " "),
                           standardized_syntax,
-                          fcomparison_syntax), ";")
+                          fscomparison_syntax), ";")
   output_syntax <- gsub(" {1,};", ";", output_syntax)
   output_syntax <- paste(strwrap(output_syntax, width = 85, exdent = 5), 
                          collapse = "\n")
