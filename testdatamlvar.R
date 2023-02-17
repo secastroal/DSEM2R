@@ -1,3 +1,45 @@
+# Testing data for ML-VAR model.
+library(MplusAutomation)
+library(mlVAR)
+library(esmpack)
+invisible(lapply(list.files("R/", full.names = TRUE), source))
+
+# Simulate data using the mlVAR package:
+Model <- mlVARsim(nPerson = 50, nNode = 3, nTime = 50, lag=1)
+
+# Use V3 as a within level covariate. 
+# For this, it should be group centered in Mplus and the intraindividual mean
+# added as a between level covariate.
+
+
+# Simulate between level covariate and dependent variable.
+ID <- 1:50
+W <- round(rnorm(50, 50, 10), 0)
+Z <- round(1.2 * W + rnorm(50), 0)
+
+dataBetween <- data.frame(ID, W, Z)
+
+# Add between level covariate and dependent variable to the ML-VAR data
+
+Model$Data <- merge.esm(vars      = c("W", "Z"), 
+                        id        = "ID", 
+                        esmdata   = Model$Data, 
+                        crossdata = dataBetween)
+
+# Test mlvar2Mplus with two variables + random lagged effects.
+mlvar2Mplus(y  = c("V1", "V2"), 
+            id = "ID",
+            data = Model$Data,
+            random.effets = list(lagged = TRUE,
+                                 slopes = TRUE,
+                                 trend  = TRUE,
+                                 rvar   = FALSE),
+            filename = "mlvar1.dat")
+
+
+
+
+# Code to simulate ML-VAR data by Laura Bringmann.
 library(vars)
 library(arm)
 library(mvtnorm)
@@ -24,30 +66,27 @@ cormatrix2=function(x,np){
 
 
 Multilevel_var=function(
-    
-  
-  i=1
-  np=21
-  nT=50
-  int=rep(c(1.87,1.04),10)
-  sd.int=rep(c(1.10,1.029),10)
-  CC.int=cormatrix(0.4,20)
-  SD=rep(c(.1,.1,.1,.1,.1,.1,.1,.1,.1,.1),40)# leidt tot een hele slechte sigma_sim  
-  SD=rep(c(.06,.1,0.02,.6,.1,.02,.06,.1,.02,.06),40)
-  SD=rep(c(.13,.13,.13,.14,.2,.13,.13,.13,.2,.15),40)
-  SD=rep(c(.00000002,.00000001,0.0000001,.0000008,.000006,.00004,.00006,.00001,.00002,.0003),40)
+  i=1,
+  np=21,
+  nT=50,
+  int=rep(c(1.87,1.04),10),
+  sd.int=rep(c(1.10,1.029),10),
+  CC.int=cormatrix(0.4,20),
+  SD=rep(c(.1,.1,.1,.1,.1,.1,.1,.1,.1,.1),40),# leidt tot een hele slechte sigma_sim
+  # SD=rep(c(.06,.1,0.02,.6,.1,.02,.06,.1,.02,.06),40),
+  # SD=rep(c(.13,.13,.13,.14,.2,.13,.13,.13,.2,.15),40),
+  # SD=rep(c(.00000002,.00000001,0.0000001,.0000008,.000006,.00004,.00006,.00001,.00002,.0003),40),
   #cor=cormatrix(0.4,9);
   #x=c(0.1,0.4,0.35),
   #cor=cormatrix2(x,9),
-  corr=cormatrix(0.4,np*np)
-  cor=cormatrix(0.4,np*np)
-  eps=cormatrix(0.4,np)
+  corr=cormatrix(0.4,np*np),
+  cor=cormatrix(0.4,np*np),
+  eps=cormatrix(0.4,np),
   #c(1.31,1.56,1.9)
-  diag.eps=rep(c(1.01,1.0056),10)
-  Nrep=1
+  diag.eps=rep(c(1.01,1.0056),10),
+  Nrep=1,
   N=150
-)
-{
+){
   
   
   N=N#number of subjects
@@ -386,5 +425,6 @@ Multilevel_var=function(
     
     plot(as.vector(Sigma_2),as.vector(Mt))
     cor(as.vector(Sigma_2),as.vector(Mt))
+  }
   }
   
