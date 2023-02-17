@@ -280,7 +280,6 @@ mlvar2Mplus <- function(y, id, x = NULL, time = NULL,
     output_syntax <- do.call(output.options, c(output_options))
   }
   
-  
   if (is.logical(inpfile) && inpfile) {
     inpfile <- gsub("(.*)\\..*$", "\\1.inp", origfilename)
   }
@@ -294,6 +293,17 @@ mlvar2Mplus <- function(y, id, x = NULL, time = NULL,
   
   if (runmodel) {
     runModels(inpfile)
+  }
+  
+  # Remove additional samples when both bparameters and fscores are saved.
+  if (file.exists(gsub("(.*)\\..*$", "\\1_samples.dat", origfilename)) & 
+      file.exists(gsub("(.*)\\..*$", "\\1_fscores.dat", origfilename))) {
+    tmp_samples <- readLines(gsub("(.*)\\..*$", "\\1_samples.dat", origfilename))
+    
+    writeLines(head(tmp_samples, -100), 
+               gsub("(.*)\\..*$", "\\1_samples.dat", origfilename))
+    
+    rm(tmp_samples)
   }
   
   Mplusoutput <- readModels(gsub("(.*)\\..*$", "\\1.out", origfilename))

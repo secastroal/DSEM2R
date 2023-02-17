@@ -31,10 +31,12 @@ mlvar2Mplus(y  = c("V1", "V2"),
             id = "ID",
             data = Model$Data,
             random.effects = list(lagged = TRUE,
-                                 slopes = TRUE,
-                                 trend  = TRUE,
-                                 rvar   = FALSE),
+                                  slopes = TRUE,
+                                  trend  = TRUE,
+                                  rvar   = FALSE),
             filename = "mlvar1.dat")
+
+mlvar1 <- readModels("mlvar1.out")
 
 
 
