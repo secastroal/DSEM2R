@@ -8,19 +8,19 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
                         random.effets = list(lagged = TRUE,
                                              slopes = TRUE,
                                              trend  = TRUE,
-                                             rvar   = TRUE),
-                        full.between.sigma = TRUE){
+                                             rvar   = TRUE)){
   
   # Create syntax of the multilevel VAR model.
   # Using as many lags for the y variables as indicated with the argument lag.
   # Some of these lagged effects might be set at 0 with the argument lag.at.0.
   # Within level covariates with contemporaneous effects might be added with x.
   # Linear trends can be added with time.
-  # Between level covariates might be added with w.
-  # Between level dependent variables might be added with z.
+  # Between level covariates might be added with w. By default, all random effects 
+  # are regressed on each w.
+  # Between level dependent variables might be added with z. By default, every z
+  # are regressed on each random effect.
   # Lagged effects, slopes, and residual variances can be defined as random 
   # effects with random effects.
-  # Include full between var-cov matrix of random effects with full.between.sigma.
   
   lagged_effects <- paste0(y, "&", rep(1:lags, each = length(y)))
   
@@ -124,13 +124,13 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
                                    rep(y, each = length(x)), 
                                    " ON ", within_cov_effects, ";")
       
-      within_syntax <- c(within_syntax, within_cov_effects)
+      within_syntax <- c(within_syntax, "\n", within_cov_effects)
       
       rand_effects <- c(rand_effects, rand_slo)
       
       rm(rand_slo)
     } else {
-      within_syntax <- c(within_syntax, 
+      within_syntax <- c(within_syntax,  "\n", 
                          paste0(rep(y, each = length(x)), 
                                 " ON ", within_cov_effects, ";"))
     }
@@ -142,13 +142,13 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
       
       time_effect <-  paste0(rand_time, " | ", y, " ON ", time_effect, ";")
       
-      within_syntax <- c(within_syntax, time_effect)
+      within_syntax <- c(within_syntax, "\n", time_effect)
       
       rand_effects <- c(rand_effects, rand_time)
       
       rm(rand_time)
     } else {
-      within_syntax <-  c(within_syntax,
+      within_syntax <-  c(within_syntax, "\n",
                           paste0(y, " ON ", time_effect, ";"))
     }
   }
@@ -157,7 +157,7 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
     if (length(y) == 1L) {
       rand_var <- "logv"
       
-      within_syntax <- c(within_syntax, paste0(rand_var, " | ", y, ";"))
+      within_syntax <- c(within_syntax, "\n", paste0(rand_var, " | ", y, ";"))
       
       rand_effects <- c(rand_effects, rand_var)
       
@@ -185,7 +185,7 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
       }
       rm(i, tmp_cov_syntax)
       
-      within_syntax <- c(within_syntax, var_syntax, cov_syntax)
+      within_syntax <- c(within_syntax, "\n", var_syntax, "\n", cov_syntax)
       
       rand_effects <- c(rand_effects, rand_var, rand_cov)
       
@@ -193,10 +193,47 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
     }
   }
   
+  # The full variance-covariance matrix among the random effects at the 
+  # between-level is estimated by default.
+  
+  between_syntax <- c()
+  
+  if (!is.null(w)) {
+    between_cov_effects <- paste0(rand_effects, " ON ",
+                                  paste(between_cov_effects, collapse = " "), ";")
+    
+    between_syntax <- c(between_syntax, between_cov_effects)
+  }
+  
+  if (!is.null(z)) {
+    between_dependent <- paste0(between_dependent, " ON ",
+                                paste(rand_effects, collapse = " "), ";")
+    between_syntax <- c(between_syntax, "\n", between_dependent)
+  }
+  
+  between_var_cov_syntax <- paste0(paste(c(y, rand_effects), collapse = " "), " WITH ",
+                                   paste(c(y, rand_effects), collapse = " "), ";")
+  
+  between_syntax <- c(between_syntax, "\n", between_var_cov_syntax)
+  
+  # Put within and between syntax together
+  
+  syntax <- c("%WITHIN%", within_syntax, "\n", "%BETWEEN%", between_syntax)
+  
+  # Reduce line length to 85 characters or less.
+  syntax <- paste(strwrap(syntax, width = 85, exdent = 5), collapse = "\n")
+  
+  # Delete spaces before ;
+  syntax <- gsub(" ;", ";", syntax)
+  
+  # Complete model syntax:
+  syntax <- paste0("MODEL:\n", syntax)
+  
+  return(syntax)
   
 }
 
-cat(paste(within_syntax, collapse = "\n"))
+#cat(paste(within_syntax, collapse = "\n"))
 
 # 9.30
 # one variable y with random intercept, slopes, and variance. And between level
