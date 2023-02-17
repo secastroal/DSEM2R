@@ -4,6 +4,6 @@ This repository includes a set of functions that allow to easily run DSEM analys
 
 ## To Do
 
-- [] Include syntax line to allow for within level covariates when TINTERVAL is defined. Trick Mplus into thinking the covariate is a dependent variable. For example: `x ON x&1\@0`.
-- [] Group center within-level covariates in mlvar2Mplus.
+- [ ] Include syntax line to allow for within level covariates when TINTERVAL is defined. Trick Mplus into thinking the covariate is a dependent variable. For example: `x ON x&1\@0`.
+- [x] Group center within-level covariates in mlvar2Mplus.
 
