@@ -1,4 +1,4 @@
-# Funtion to preare data and write a complete syntax of a VAR model in Mplus
+# Function to prepare data and write a complete syntax of a VAR model in Mplus
 
 var2Mplus <- function(y, x = NULL, time = NULL, data, lags = 1, 
                       lag.at.0 = NULL, beta.at.0 = NULL,
