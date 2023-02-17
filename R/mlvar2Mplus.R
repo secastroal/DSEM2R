@@ -4,10 +4,10 @@ mlvar2Mplus <- function(y, id, x = NULL, time = NULL,
                         w = NULL, z = NULL,
                         data, lags = 1, 
                         lag.at.0 = NULL,
-                        random.effets = list(lagged = TRUE,
-                                             slopes = TRUE,
-                                             trend  = TRUE,
-                                             rvar   = TRUE),
+                        random.effects = list(lagged = TRUE,
+                                              slopes = TRUE,
+                                              trend  = TRUE,
+                                              rvar   = TRUE),
                         variable_options,
                         analysis_options,
                         output_options,
@@ -259,9 +259,10 @@ mlvar2Mplus <- function(y, id, x = NULL, time = NULL,
   }
   
   if (missing(analysis_options)) {
-    analysis_syntax <- analysis.options()
+    analysis_syntax <- analysis.options(type = "TWOLEVEL RANDOM")
   } else {
-    analysis_syntax <- do.call(analysis.options, c(analysis_options))
+    analysis_syntax <- do.call(analysis.options, c(list(type = "TWOLEVEL RANDOM"), 
+                                                   analysis_options))
   }
   
   model_syntax <- write.mlvar(y = y, x = x, time = time, w = w, z= z, 
@@ -271,7 +272,8 @@ mlvar2Mplus <- function(y, id, x = NULL, time = NULL,
   if (missing(output_options)) {
     output_syntax <- output.options(
       save = list(
-        bparameters = gsub("(.*)\\..*$", "\\1_samples.dat", origfilename)
+        bparameters = gsub("(.*)\\..*$", "\\1_samples.dat", origfilename),
+        fscores     = gsub("(.*)\\..*$", "\\1_fscores.dat", origfilename)
       )
     )
   } else {

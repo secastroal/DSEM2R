@@ -103,8 +103,9 @@ analysis.options <- function(type         = NULL,
     prior_syntax = ""
   }
   
-  analysis_syntax <- paste("ANALYSIS:\nESTIMATOR = BAYES;",
+  analysis_syntax <- paste("ANALYSIS:",
                            type_syntax,
+                           "\nESTIMATOR = BAYES;",
                            biterations_syntax,
                            chains_syntax,
                            processors_syntax,

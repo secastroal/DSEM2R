@@ -5,10 +5,10 @@
 
 write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data, 
                         lags = 1, lag.at.0 = NULL, 
-                        random.effets = list(lagged = TRUE,
-                                             slopes = TRUE,
-                                             trend  = TRUE,
-                                             rvar   = TRUE)){
+                        random.effects = list(lagged = TRUE,
+                                              slopes = TRUE,
+                                              trend  = TRUE,
+                                              rvar   = TRUE)){
   
   # Create syntax of the multilevel VAR model.
   # Using as many lags for the y variables as indicated with the argument lag.
@@ -75,12 +75,22 @@ write.mlvar <- function(y, x = NULL, time = NULL, w = NULL, z = NULL, data,
   rand_effects <- c()
   
   if (random.effects$lagged) {
-    rand_lags <- paste0("s",
-                        rep(1:length(y), each = length(y)),
-                        rep(1:length(y), times = length(y)),
-                        rep(c("", paste0("_", 2:lags)), 
-                            times = c(length(y) * length(y),
-                                      length(y) * length(y) * (lags - 1))))
+    
+    if (lags == 1) {
+      rand_lags <- paste0("s",
+                          rep(1:length(y), each = length(y)),
+                          rep(1:length(y), times = length(y))
+                          )
+    } else {
+      rand_lags <- paste0("s",
+                          rep(1:length(y), each = length(y)),
+                          rep(1:length(y), times = length(y)),
+                          rep(c("", paste0("_", 2:lags)), 
+                              times = c(length(y) * length(y),
+                                        length(y) * length(y) * (lags - 1))
+                              )
+      )
+    }
     
     lagged_effects <- paste0(rep(rep(y, each = length(y)), lags), " ON ", 
                              unlist(rep(split(lagged_effects, 
