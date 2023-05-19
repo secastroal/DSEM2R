@@ -8,4 +8,6 @@ This repository includes a set of functions that allow to easily run DSEM analys
 - [ ] Group center within-level covariates in mlvar2Mplus.
 - [ ] Test whether mlvar2DSEM works when only specifying some of the random.effects.
 - [ ] Include time in the between var-cov structure when using time for a time trend.
+- [ ] Maybe extend to allow for latent variables.
+- [ ] Facilitate the exploration of output.
 
