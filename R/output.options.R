@@ -30,7 +30,7 @@ output.options <- function (tech          = c(1, 8),
     if (!is.null(save$bparameters)) {
       bparameters_syntax <- paste0("BPARAMETERS = ", save$bparameters, ";")
     } else {
-      bparameters_sytax <- ""
+      bparameters_syntax <- ""
     }
     
     if (!is.null(save$fscores)) {
