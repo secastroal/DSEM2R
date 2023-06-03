@@ -50,7 +50,7 @@ names(vardata) <- c("y1", "y2")
 
 Now, with the simulated data, we can simply fit an AR(1) model for variable `y1`. To do this, three arguments are needed: `y` to indicate the name of the dependent variable (`y1`), `data` to indicate the data.frame where the data is stored, and `filename` to indicate the name for the data and input files that are required to run the analysis in Mplus. When running the function, it prints the Mplus syntax of the model in the console and at the same time it has run the model and read the results into R. By default, the function also saves the MCMC samples into a *.dat* file and uses as default output the options *TECH1* and *TECH8* from Mplus.
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 exvar01 <- var2Mplus(
   y        = "y1",
   data     = vardata,
@@ -61,7 +61,7 @@ exvar01 <- var2Mplus(
 The final object `exvar01` is an *"mplus.model"* object as defined in `MplusAutomation`, which includes all the available output of the model. For example, we can use the following code to access the parameter estimates:
 
 ```{r}
-exvar01$summaries
+exvar01$parameters$unstandardized
 ```
 
 Also, we can extract the MCMC samples. the following command extracts the first 6 samples of the first chain:
@@ -79,7 +79,7 @@ y_{1,t} = \alpha + \phi{y_{1,t-1}} + \beta_{0}{y_{2,t}} + \beta_{1}{y_{2,t - 1}}
 $$
 then, the syntax to run the model is Mplus is as follows:
 
-```{r, results='hide'}
+```{r, message=FALSE, warning=FALSE}
 exvar02 <- var2Mplus(
   y        = "y1",
   x        = "y2",
@@ -91,7 +91,7 @@ exvar02 <- var2Mplus(
 
 In this example, we use `y2` as a dependent variable instead of as a covariate.Therefore, we fit a bivariate VAR model. We can specify this model with the following command: 
 
-```{r, results='hide'}
+```{r, message=FALSE, warning=FALSE}
 exvar03 <- var2Mplus(
   y        = c("y1", "y2"),
   data     = vardata,
@@ -102,7 +102,7 @@ exvar03 <- var2Mplus(
 
 With the function `var2Mplus`, we can further customize the analyses in Mplus. For example, we can specify a time variable to use with the *TINTERVAL* option, modify the settings of the MCMC algorithm, or save the factor scores of the latent variables of interest. The example bellow shows how to modify the setting of the MCMC algorithm:
 
-```{r, results='hide'}
+```{r, message=FALSE, warning=FALSE}
 exvar04 <- var2Mplus(
   y        = c("y1", "y2"),
   data     = vardata,
@@ -116,9 +116,88 @@ exvar04 <- var2Mplus(
 
 ### Example: mlvar2Mplus
 
+In contrast, the function `mlvar2Mplus` is used to fit multilevel VAR models. 
 
+Again, let us first simulate a data set with 50 participants, 3 variables, and 100 time points:
 
+```{r}
+mlvardata <- mlVAR::mlVARsim(nPerson = 50, 
+                             nNode   = 3, 
+                             nTime   = 100)
+mlvardata <- mlvardata$Data
+names(mlvardata) <- c("y1", "y2", "y3", "id")
+```
 
+#### ML-AR model
+
+Using `mlvar2Mplus` is very similar to using `var2Mplus` but there are much more options to accommodate for the multilevel structure (occasions nested in individuals). This function allows adding within-level covariates, between-level covariates, and between-level dependent variables. Also, by default, lagged coefficients, regression slopes, linear time trends, and residual variances are allowed to vary randomly across individuals.
+
+In this first example, we simply fit a multilevel AR model for one variable:
+
+```{r, message=FALSE, warning=FALSE}
+exmlvar01 <- mlvar2Mplus(
+  y    = "y1",
+  id   = "id",
+  data = mlvardata,
+  filename = "exmlvar01.dat")
+```
+
+Just as with `var2Mplus`, the object `exmlvar01` is an *"mplus.model"* object. Hence, we can look at the estimated parameters like this:
+
+```{r}
+exmlvar01$parameters$unstandardized
+```
+
+And, we can look at the MCMC samples like this:
+
+```{r}
+head(exmlvar01$bparameters$valid_draw$'1')
+```
+
+#### ML-VAR(1)
+
+We can fit a multilevel VAR to the three simulated variables. However, in this case, we won't alow the residual variances to vary randomly across participants:
+
+```{r, message=FALSE, warning=FALSE}
+exmlvar02 <- mlvar2Mplus(
+  y    = c("y1", "y2", "y3"),
+  id   = "id",
+  data = mlvardata,
+  random.effects = list(lagged = TRUE, rvar = FALSE),
+  filename = "exmlvar02.dat")
+```
+
+#### ML-VAR(2)
+
+The order of the lagged effects can also be modified:
+
+```{r, message=FALSE, warning=FALSE}
+exmlvar03 <- mlvar2Mplus(
+  y    = c("y1", "y2"),
+  id   = "id",
+  data = mlvardata,
+  lags = 2,
+  random.effects = list(lagged = TRUE, rvar = FALSE),
+  filename = "exmlvar03.dat")
+```
+
+#### Additional options.
+
+In `mlvar2Mplus`, we can also further change the settings of the analysis in Mplus, just as with `var2Mplus`.
+
+```{r, message=FALSE, warning=FALSE}
+exmlvar04 <- mlvar2Mplus(
+  y    = c("y1", "y2"),
+  id   = "id",
+  data = mlvardata,
+  lags = 2,
+  random.effects = list(lagged = TRUE, rvar = FALSE),
+  filename = "exmlvar04.dat",
+  analysis_options = list(chains = 4,
+                          biterations.min = 5000,
+                          biterations.max = 20000,
+                          thin = 10))
+```
 
 ## To Do
 - [ ] Write package Description and documentation.
