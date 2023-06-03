@@ -22,8 +22,6 @@ library(MplusAutomation)
 <!-- badges: start -->
 <!-- badges: end -->
 
-# DSEM2R
-
 This repository includes a set of functions that allow to easily run DSEM analyses within the R environment. In particular, with these functions one can run (V)AR and multilevel (V)AR models. The functions allow writing the syntax and exporting the data to Mplus, run the model in Mplus, and read the output of the analysis.
 
 **Note that you need to have Mplus installed to make use of the functions available in this repository as well as the R package [MplusAutomation](https://cran.r-project.org/web/packages/MplusAutomation/index.html).**
@@ -36,7 +34,7 @@ At the moment, the best way to make use of these functions is to download all th
 
 ### Example: var2Mplus
 
-Here, we present some examples on how to use the function `var2DSEM`.
+Here, we present some examples on how to use the function `var2Mplus`.
 
 Let us first simulate time series data with two variables and 100 time points based on a VAR(1) process:
 
@@ -190,13 +188,13 @@ exmlvar04 <- mlvar2Mplus(
   y    = c("y1", "y2"),
   id   = "id",
   data = mlvardata,
-  lags = 2,
+  lags = 1,
   random.effects = list(lagged = TRUE, rvar = FALSE),
   filename = "exmlvar04.dat",
   analysis_options = list(chains = 4,
                           biterations.min = 5000,
                           biterations.max = 20000,
-                          thin = 10))
+                          thin = 5))
 ```
 
 ## To Do

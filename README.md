@@ -7,8 +7,6 @@
 
 <!-- badges: end -->
 
-# DSEM2R
-
 This repository includes a set of functions that allow to easily run
 DSEM analyses within the R environment. In particular, with these
 functions one can run (V)AR and multilevel (V)AR models. The functions
@@ -35,7 +33,7 @@ repository as an R package so users can simply install the package via
 
 ### Example: var2Mplus
 
-Here, we present some examples on how to use the function `var2DSEM`.
+Here, we present some examples on how to use the function `var2Mplus`.
 
 Let us first simulate time series data with two variables and 100 time
 points based on a VAR(1) process:
@@ -95,10 +93,10 @@ estimates:
 
 ``` r
 exvar01$parameters$unstandardized
-#>          paramHeader param   est posterior_sd  pval lower_2.5ci upper_2.5ci
-#> 1              Y1.ON  Y1&1 0.483        0.088 0.000       0.297       0.648
-#> 2         Intercepts    Y1 0.098        0.124 0.212      -0.157       0.344
-#> 3 Residual.Variances    Y1 1.456        0.215 0.000       1.124       1.955
+#>          paramHeader param    est posterior_sd pval lower_2.5ci upper_2.5ci
+#> 1              Y1.ON  Y1&1  0.374        0.092 0.00       0.179       0.546
+#> 2         Intercepts    Y1 -0.106        0.106 0.15      -0.322       0.106
+#> 3 Residual.Variances    Y1  1.064        0.157 0.00       0.821       1.428
 #>     sig
 #> 1  TRUE
 #> 2 FALSE
@@ -115,21 +113,21 @@ head(exvar01$bparameters$valid_draw$'1')
 #> End = 7 
 #> Thinning interval = 1 
 #>      Chain.number Iteration.number Parameter.1_MEAN.Y1 Parameter.2_Y1.ON.Y1&1
-#> 1001            1             1001             0.09951                0.59416
-#> 1002            1             1002             0.40880                0.53611
-#> 1003            1             1003             0.15206                0.38070
-#> 1004            1             1004            -0.06791                0.62625
-#> 1005            1             1005             0.16713                0.52109
-#> 1006            1             1006            -0.11832                0.53446
-#> 1007            1             1007             0.28069                0.37958
+#> 1001            1             1001            -0.10326                0.49491
+#> 1002            1             1002             0.16172                0.49713
+#> 1003            1             1003            -0.05777                0.27952
+#> 1004            1             1004            -0.24690                0.48796
+#> 1005            1             1005            -0.04686                0.43457
+#> 1006            1             1006            -0.28934                0.38274
+#> 1007            1             1007             0.05235                0.30124
 #>      Parameter.3_Y1
-#> 1001        1.41687
-#> 1002        1.22071
-#> 1003        2.67324
-#> 1004        1.49237
-#> 1005        1.19253
-#> 1006        1.34014
-#> 1007        1.28200
+#> 1001        1.03359
+#> 1002        0.90186
+#> 1003        1.95126
+#> 1004        1.09602
+#> 1005        0.86404
+#> 1006        0.97758
+#> 1007        0.94505
 ```
 
 #### AR model with one covariate.
@@ -334,16 +332,16 @@ object. Hence, we can look at the estimated parameters like this:
 
 ``` r
 exmlvar01$parameters$unstandardized
-#>   paramHeader param    est posterior_sd  pval lower_2.5ci upper_2.5ci   sig
-#> 1     Y1.WITH   S11  0.059        0.034 0.021       0.002       0.136  TRUE
-#> 2     Y1.WITH  LOGV  0.296        0.146 0.009       0.046       0.622  TRUE
-#> 3    S11.WITH  LOGV  0.028        0.031 0.149      -0.028       0.095 FALSE
-#> 4       Means    Y1 -0.537        0.141 0.000      -0.819      -0.264  TRUE
-#> 5       Means   S11  0.042        0.029 0.076      -0.015       0.100 FALSE
-#> 6       Means  LOGV  0.527        0.126 0.001       0.274       0.769  TRUE
-#> 7   Variances    Y1  0.869        0.206 0.000       0.574       1.371  TRUE
-#> 8   Variances   S11  0.032        0.010 0.000       0.018       0.056  TRUE
-#> 9   Variances  LOGV  0.773        0.179 0.000       0.533       1.204  TRUE
+#>   paramHeader param   est posterior_sd  pval lower_2.5ci upper_2.5ci   sig
+#> 1     Y1.WITH   S11 0.029        0.041 0.220      -0.048       0.116 FALSE
+#> 2     Y1.WITH  LOGV 0.108        0.098 0.105      -0.073       0.320 FALSE
+#> 3    S11.WITH  LOGV 0.025        0.023 0.111      -0.018       0.076 FALSE
+#> 4       Means    Y1 0.228        0.153 0.072      -0.080       0.537 FALSE
+#> 5       Means   S11 0.187        0.035 0.000       0.118       0.256  TRUE
+#> 6       Means  LOGV 0.057        0.082 0.235      -0.104       0.219 FALSE
+#> 7   Variances    Y1 1.005        0.238 0.000       0.650       1.582  TRUE
+#> 8   Variances   S11 0.050        0.014 0.000       0.030       0.085  TRUE
+#> 9   Variances  LOGV 0.312        0.077 0.000       0.209       0.495  TRUE
 #>   BetweenWithin
 #> 1       Between
 #> 2       Between
@@ -365,45 +363,45 @@ head(exmlvar01$bparameters$valid_draw$'1')
 #> End = 7 
 #> Thinning interval = 1 
 #>      Chain.number Iteration.number Parameter.1_%BETWEEN%:.MEAN.S11
-#> 1001            1             1001                         0.02494
-#> 1002            1             1002                         0.06005
-#> 1003            1             1003                         0.00998
-#> 1004            1             1004                         0.05042
-#> 1005            1             1005                         0.05002
-#> 1006            1             1006                         0.03922
-#> 1007            1             1007                        -0.00631
+#> 1001            1             1001                         0.15933
+#> 1002            1             1002                         0.20492
+#> 1003            1             1003                         0.14948
+#> 1004            1             1004                         0.19868
+#> 1005            1             1005                         0.18964
+#> 1006            1             1006                         0.19147
+#> 1007            1             1007                         0.13469
 #>      Parameter.2_%BETWEEN%:.MEAN.LOGV Parameter.3_%BETWEEN%:.MEAN.Y1
-#> 1001                          0.39894                       -0.61831
-#> 1002                          0.61293                       -0.50335
-#> 1003                          0.56073                       -0.63643
-#> 1004                          0.41175                       -0.63651
-#> 1005                          0.34009                       -0.60844
-#> 1006                          0.72627                       -0.26265
-#> 1007                          0.76917                       -0.28899
+#> 1001                         -0.00678                        0.21906
+#> 1002                          0.12045                        0.25457
+#> 1003                          0.06721                        0.15694
+#> 1004                         -0.02911                        0.12533
+#> 1005                         -0.07290                        0.17537
+#> 1006                          0.19249                        0.46879
+#> 1007                          0.22654                        0.51575
 #>      Parameter.4_%BETWEEN%:.S11 Parameter.5_%BETWEEN%:.LOGV.WITH.S11
-#> 1001                    0.03047                              0.00772
-#> 1002                    0.04382                              0.06400
-#> 1003                    0.03525                              0.04985
-#> 1004                    0.04651                              0.02174
-#> 1005                    0.03137                              0.00414
-#> 1006                    0.03415                              0.02399
-#> 1007                    0.03441                              0.02120
+#> 1001                    0.04726                             -0.01191
+#> 1002                    0.05355                              0.03446
+#> 1003                    0.04530                              0.05927
+#> 1004                    0.05921                              0.00680
+#> 1005                    0.04817                              0.00921
+#> 1006                    0.05868                              0.03304
+#> 1007                    0.04695                              0.01031
 #>      Parameter.6_%BETWEEN%:.LOGV Parameter.7_%BETWEEN%:.Y1.WITH.S11
-#> 1001                     0.62657                            0.00075
-#> 1002                     0.80413                            0.01314
-#> 1003                     0.95176                            0.03622
-#> 1004                     0.75533                            0.05484
-#> 1005                     0.96919                            0.05612
-#> 1006                     0.72698                            0.03776
-#> 1007                     0.80628                            0.03240
+#> 1001                     0.27693                           -0.07461
+#> 1002                     0.35574                           -0.03336
+#> 1003                     0.42673                            0.00391
+#> 1004                     0.32269                            0.01755
+#> 1005                     0.40075                            0.03449
+#> 1006                     0.31490                           -0.01928
+#> 1007                     0.33107                           -0.01380
 #>      Parameter.8_%BETWEEN%:.Y1.WITH.LOGV Parameter.9_%BETWEEN%:.Y1
-#> 1001                             0.35238                   0.76641
-#> 1002                             0.31831                   0.76981
-#> 1003                             0.32781                   0.85714
-#> 1004                             0.33889                   0.67709
-#> 1005                             0.56733                   1.24474
-#> 1006                             0.30250                   0.79180
-#> 1007                             0.30270                   0.71371
+#> 1001                             0.18478                   1.24078
+#> 1002                             0.13636                   1.10491
+#> 1003                             0.10073                   1.02230
+#> 1004                             0.16083                   0.72806
+#> 1005                             0.28921                   1.28713
+#> 1006                             0.12440                   0.95590
+#> 1007                             0.13782                   0.77866
 ```
 
 #### ML-VAR(1)
@@ -524,13 +522,13 @@ exmlvar04 <- mlvar2Mplus(
   y    = c("y1", "y2"),
   id   = "id",
   data = mlvardata,
-  lags = 2,
+  lags = 1,
   random.effects = list(lagged = TRUE, rvar = FALSE),
   filename = "exmlvar04.dat",
   analysis_options = list(chains = 4,
                           biterations.min = 5000,
                           biterations.max = 20000,
-                          thin = 10))
+                          thin = 5))
 #> TITLE: Your title goes here
 #> DATA: FILE = "exmlvar04.dat";
 #> VARIABLE: 
@@ -538,7 +536,7 @@ exmlvar04 <- mlvar2Mplus(
 #> MISSING=.;
 #> USEVARIABLES = y1 y2 id;
 #> CLUSTER = id;
-#> LAGGED = y1(2) y2(2);
+#> LAGGED = y1(1) y2(1);
 #> 
 #> 
 #> ANALYSIS:
@@ -547,7 +545,7 @@ exmlvar04 <- mlvar2Mplus(
 #> BITERATIONS = 20000 (5000);
 #> CHAINS = 4;
 #> PROCESSORS = 4;
-#> THIN = 10;
+#> THIN = 5;
 #> 
 #> 
 #> MODEL:
@@ -556,15 +554,10 @@ exmlvar04 <- mlvar2Mplus(
 #> s12 | y1 ON y2&1;
 #> s21 | y2 ON y1&1;
 #> s22 | y2 ON y2&1;
-#> s11_2 | y1 ON y1&2;
-#> s12_2 | y1 ON y2&2;
-#> s21_2 | y2 ON y1&2;
-#> s22_2 | y2 ON y2&2;
 #> 
 #> %BETWEEN%
 #> 
-#> y1 y2 s11 s12 s21 s22 s11_2 s12_2 s21_2 s22_2 WITH y1 y2 s11 s12 s21 s22 s11_2 s12_2
-#>      s21_2 s22_2;
+#> y1 y2 s11 s12 s21 s22 WITH y1 y2 s11 s12 s21 s22;
 #> 
 #> SAVEDATA:
 #> BPARAMETERS = exmlvar04_samples.dat;
