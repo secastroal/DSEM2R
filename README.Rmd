@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
 
 ```{r, include = FALSE}
 invisible(lapply(list.files("R/", full.names = TRUE), source))
+library(MplusAutomation)
 ```
 
 # DSEM2R
@@ -35,7 +36,7 @@ At the moment, the best way to make use of these functions is to download all th
 
 ### Example: var2Mplus
 
-Here, we present some example on how to use the function `var2DSEM`.
+Here, we present some examples on how to use the function `var2DSEM`.
 
 Let us first simulate time series data with two variables and 100 time points based on a VAR(1) process:
 
@@ -45,7 +46,9 @@ vardata <- data.frame(vardata)
 names(vardata) <- c("y1", "y2")
 ```
 
-Now, with the simulated data, we can simply fit an AR(1) model for variable `y1`. To do this, three arguments are needed: `y` to indicate the name of the dependent variable (`y1`), `data` to indicate the data.frame where the data is stored, and `filename` to indicate the name for the data and input files that are required to run the analysis in Mplus. 
+#### AR model.
+
+Now, with the simulated data, we can simply fit an AR(1) model for variable `y1`. To do this, three arguments are needed: `y` to indicate the name of the dependent variable (`y1`), `data` to indicate the data.frame where the data is stored, and `filename` to indicate the name for the data and input files that are required to run the analysis in Mplus. When running the function, it prints the Mplus syntax of the model in the console and at the same time it has run the model and read the results into R. By default, the function also saves the MCMC samples into a *.dat* file and uses as default output the options *TECH1* and *TECH8* from Mplus.
 
 ```{r}
 exvar01 <- var2Mplus(
@@ -54,7 +57,29 @@ exvar01 <- var2Mplus(
   filename = "exvar01.dat")
 ```
 
+ 
+The final object `exvar01` is an *"mplus.model"* object as defined in `MplusAutomation`, which includes all the available output of the model. For example, we can use the following code to access the parameter estimates:
+
 ```{r}
+exvar01$summaries
+```
+
+Also, we can extract the MCMC samples. the following command extracts the first 6 samples of the first chain:
+
+```{r}
+head(exvar01$bparameters$valid_draw$'1')
+```
+
+#### AR model with one covariate.
+
+Now, we can also fit an AR model on variable `y1` but adding `y2` as a covariate. By default, when adding covariates, the function includes the contemporaneous and the lagged effect of the covariate on the dependent variable. This behavior can be modified with the argument `beta.at.0`. More information about this will be available in the documentation. For now, if the model is defined as:
+
+$$
+y_{1,t} = \alpha + \phi{y_{1,t-1}} + \beta_{0}{y_{2,t}} + \beta_{1}{y_{2,t - 1}} + \varepsilon_{t},
+$$
+then, the syntax to run the model is Mplus is as follows:
+
+```{r, results='hide'}
 exvar02 <- var2Mplus(
   y        = "y1",
   x        = "y2",
@@ -62,15 +87,22 @@ exvar02 <- var2Mplus(
   filename = "exvar02.dat")
 ```
 
-```{r}
+#### VAR model.
+
+In this example, we use `y2` as a dependent variable instead of as a covariate.Therefore, we fit a bivariate VAR model. We can specify this model with the following command: 
+
+```{r, results='hide'}
 exvar03 <- var2Mplus(
   y        = c("y1", "y2"),
   data     = vardata,
   filename = "exvar03.dat")
 ```
 
+#### Additional options.
 
-```{r}
+With the function `var2Mplus`, we can further customize the analyses in Mplus. For example, we can specify a time variable to use with the *TINTERVAL* option, modify the settings of the MCMC algorithm, or save the factor scores of the latent variables of interest. The example bellow shows how to modify the setting of the MCMC algorithm:
+
+```{r, results='hide'}
 exvar04 <- var2Mplus(
   y        = c("y1", "y2"),
   data     = vardata,
@@ -78,12 +110,9 @@ exvar04 <- var2Mplus(
   analysis_options = list(chains = 4,
                           biterations.min = 2000,
                           biterations.max = 10000,
-                          thin = 10),
-  output_options = list(save = list(bparameters = "exvar04_samples.dat")))
+                          thin = 10))
 
 ```
-
-
 
 ### Example: mlvar2Mplus
 
